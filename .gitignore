@@ -1,0 +1,64 @@
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+build/
+dist/
+*.egg-info/
+*.egg
+
+# ===== Virtual environments =====
+venv/
+env/
+.venv/
+ENV/
+
+# ===== Jupyter =====
+.ipynb_checkpoints/
+
+# ===== Testing / typing / linting caches =====
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.cache/
+
+# ===== Secrets (never commit) =====
+.env
+
+# ===== Datasets (versioned with DVC, not git) =====
+/data/raw/*
+/data/processed/*
+/data/subsampled/*
+/data/augmented/*
+!/data/**/.gitkeep
+!*.dvc
+
+# ===== Experiment artefacts =====
+/experiments/results/**/*
+!/experiments/results/**/.gitkeep
+/experiments/checkpoints/*
+!/experiments/checkpoints/.gitkeep
+/experiments/logs/**/*
+!/experiments/logs/**/.gitkeep
+
+# ===== Trained models =====
+*.h5
+*.keras
+*.pkl
+*.joblib
+
+# ===== Experiment tracking =====
+mlflow.db
+mlflow_artifacts/
+mlruns/
+wandb/
+
+# ===== Large generated figures (reproducible from code) =====
+/reports/figures/*
+!/reports/figures/.gitkeep
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
