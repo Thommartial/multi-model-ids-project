@@ -1,0 +1,28 @@
+# ============================================================
+# Conda environment — Multi-Model IDS project
+#
+# Build:   conda env create -f environment.yml
+# Use:     conda activate multi-model-ids
+# Update:  conda env update -f environment.yml --prune
+# ============================================================
+name: multi-model-ids
+
+channels:
+  - conda-forge
+
+dependencies:
+  - python=3.10
+  - pip>=23.0
+
+  # ----------------------------------------------------------
+  # Optional GPU support for TensorFlow 2.13 on the GTX 1050.
+  # TensorFlow 2.13 requires CUDA 11.8 and cuDNN 8.6. If you do
+  # not have a system-wide CUDA install, let conda provide it by
+  # uncommenting the two lines below, then verify with Task 1.2.3.
+  # - cudatoolkit=11.8
+  # - cudnn=8.6
+  # ----------------------------------------------------------
+
+  - pip:
+      - -r requirements.txt
+      - -e .          # install this project as an editable package
