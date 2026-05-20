@@ -1,0 +1,36 @@
+# ============================================================
+# Multi-Model IDS — Apptainer/Singularity definition
+#
+# Most university HPC clusters run Apptainer, not Docker. Build a
+# portable .sif image from this file:
+#
+#   apptainer build multi-model-ids.sif docker/apptainer.def
+#
+# Run on the cluster, with GPU:
+#
+#   apptainer exec --nv multi-model-ids.sif python experiments/<script>.py
+# ============================================================
+Bootstrap: docker
+From: python:3.10-slim
+
+%files
+    requirements.txt /opt/requirements.txt
+
+%post
+    apt-get update && apt-get install -y --no-install-recommends \
+        git build-essential libgomp1 graphviz curl
+    rm -rf /var/lib/apt/lists/*
+    pip install --no-cache-dir --upgrade pip
+    pip install --no-cache-dir -r /opt/requirements.txt
+
+%environment
+    export PYTHONPATH=/workspace
+    export TF_CPP_MIN_LOG_LEVEL=2
+
+%runscript
+    cd /workspace
+    exec "$@"
+
+%labels
+    Project    Multi-Model-IDS
+    Maintainer Thomas Martial Ekwelle Epalle

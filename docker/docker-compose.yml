@@ -1,0 +1,60 @@
+# ============================================================
+# Multi-Model IDS — service stack
+#
+#   ids-lab      main working container (code, JupyterLab, dashboard)
+#   mlflow       experiment-tracking UI   ->  http://localhost:5000
+#   tensorboard  training-curve viewer    ->  http://localhost:6006
+#
+# Build:  docker compose -f docker/docker-compose.yml build
+# Start:  docker compose -f docker/docker-compose.yml up -d
+# Shell:  docker compose -f docker/docker-compose.yml exec ids-lab bash
+# ============================================================
+services:
+  ids-lab:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: multi-model-ids:latest
+    container_name: ids-lab
+    working_dir: /workspace
+    volumes:
+      - ../:/workspace
+    ports:
+      - "8501:8501"   # Streamlit dashboard
+      - "8888:8888"   # JupyterLab
+    environment:
+      - TF_CPP_MIN_LOG_LEVEL=2
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+    # --- GPU access (requires the NVIDIA Container Toolkit on the host) ---
+    # Delete this 'deploy:' block to run the container CPU-only.
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    command: tail -f /dev/null   # keep alive; attach with `exec ... bash`
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:latest
+    container_name: ids-mlflow
+    volumes:
+      - ../experiments/mlflow:/mlflow
+    ports:
+      - "5000:5000"
+    command: >
+      mlflow server --host 0.0.0.0 --port 5000
+      --backend-store-uri sqlite:////mlflow/mlflow.db
+      --default-artifact-root /mlflow/artifacts
+
+  tensorboard:
+    image: multi-model-ids:latest
+    container_name: ids-tensorboard
+    depends_on:
+      - ids-lab
+    volumes:
+      - ../experiments/logs/tensorboard:/logs
+    ports:
+      - "6006:6006"
+    command: tensorboard --logdir=/logs --host=0.0.0.0 --port=6006
