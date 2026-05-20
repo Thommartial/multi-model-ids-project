@@ -65,3 +65,6 @@ Thumbs.db
 
 # EDA resume-cache (regenerable)
 reports/eda/_findings.json
+
+# Cited papers (PDFs) -- kept locally for reading, not redistributed via the public repo
+references/*.pdf
