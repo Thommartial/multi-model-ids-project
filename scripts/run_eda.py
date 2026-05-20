@@ -18,6 +18,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.data.loader import load_unsw_nb15, verify_checksums  # noqa: E402
+from src.data.preprocessor import Preprocessor  # noqa: E402
 from src.data.validation import validate_dataset  # noqa: E402
 from src.eda.complete_eda import EDAnalyzer  # noqa: E402
 
@@ -28,11 +29,17 @@ def main() -> None:
     print("=" * 60)
 
     verify_checksums()
-    df = load_unsw_nb15(combine=True)
-    validate_dataset(df, "pooled UNSW-NB15")
+    raw = load_unsw_nb15(combine=True)
+    validate_dataset(raw, "pooled UNSW-NB15 (raw)")
+
+    # Deduplicate first, so the EDA describes exactly the data the models
+    # use -- the preprocessing pipeline removes these same duplicates.
+    n_raw = len(raw)
+    df = Preprocessor().clean(raw)
+    n_duplicates = n_raw - len(df)
 
     eda = EDAnalyzer(output_dir="reports/eda")
-    eda.basic_info(df, "UNSW-NB15")
+    eda.basic_info(df, "UNSW-NB15", n_raw=n_raw, n_duplicates=n_duplicates)
     eda.class_distribution_analysis(df)
     eda.missing_value_analysis(df)
     eda.feature_statistics_analysis(df)

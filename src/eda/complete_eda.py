@@ -87,25 +87,39 @@ class EDAnalyzer:
         return False
 
     # ----- 1. basic information -------------------------------------
-    def basic_info(self, df: pd.DataFrame, name: str = "UNSW-NB15") -> None:
+    def basic_info(
+        self,
+        df: pd.DataFrame,
+        name: str = "UNSW-NB15",
+        n_raw: int | None = None,
+        n_duplicates: int | None = None,
+    ) -> None:
+        """Summarise the dataset.
+
+        ``df`` is the deduplicated data the rest of the EDA analyses (and
+        the models) use. ``n_raw`` and ``n_duplicates`` describe the raw
+        dataset before deduplication, so the report records the full
+        data-quality picture.
+        """
         key = "1. Basic information"
         if self._done(key):
             return
         mem = df.memory_usage(deep=True).sum() / 1e6
-        # Every row carries a unique `id`, so duplicates only become
-        # visible once that identifier column is excluded.
-        dup_cols = [c for c in df.columns if c != "id"]
-        dups = int(df[dup_cols].duplicated().sum())
         n_num = len(self._numeric_features(df))
+        n_analysed = len(df)
+        n_raw = n_raw if n_raw is not None else n_analysed
+        n_dup = n_duplicates if n_duplicates is not None else 0
         self.findings[key] = (
-            f"- **Records:** {df.shape[0]:,}\n"
-            f"- **Columns:** {df.shape[1]} "
-            f"({n_num} numeric features, {len(CATEGORICAL_COLS)} categorical "
-            f"features, 3 identifier/target columns)\n"
+            f"- **Raw dataset (as delivered):** {n_raw:,} records\n"
+            f"- **Duplicate records removed:** {n_dup:,} "
+            f"({100 * n_dup / n_raw:.1f}%) -- exact duplicates once the `id` "
+            f"index is excluded; removed to prevent train/test leakage "
+            f"(proposal Section 5.1)\n"
+            f"- **Records analysed below (after deduplication):** {n_analysed:,}\n"
+            f"- **Features:** {n_num} numeric + {len(CATEGORICAL_COLS)} "
+            f"categorical (the `id` index and the `label` / `attack_cat` "
+            f"targets are excluded)\n"
             f"- **In-memory size:** {mem:.1f} MB\n"
-            f"- **Duplicate records** (identical across every field except "
-            f"the `id` index): {dups:,} ({100 * dups / len(df):.1f}%) -- "
-            f"removed during preprocessing to prevent train/test leakage\n"
         )
         self._persist()
         print(f"[eda] {key} done")
