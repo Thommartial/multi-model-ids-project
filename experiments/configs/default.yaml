@@ -1,0 +1,42 @@
+# Baseline experiment configuration for the Multi-Model IDS project.
+# Loaded by src/utils/config.py. Copy and edit this file for specific
+# experiments (e.g. configs/binary_rf.yaml) rather than editing it here.
+
+data:
+  dataset: UNSW-NB15
+  raw_dir: data/raw
+  processed_dir: data/processed
+  subsampled_dir: data/subsampled
+  train_ratio: 0.70
+  val_ratio: 0.15
+  test_ratio: 0.15
+  sample_size_binary: 300000
+  sample_size_multiclass: 150000
+  sample_size_robustness: 75000
+
+features:
+  methods: [filter, rfa, rfa_bigram]
+  n_filter_features: 20
+  rfa_evaluator: random_forest
+  bigram_window: 10
+  sequence_window_min: 5
+  sequence_window_max: 20
+
+models:
+  phase1: [rule_based, random_forest, svm, xgboost, cnn1d, lstm]
+  phase2: [cnn_lstm, autoencoder, kitsune, deeplog]
+  svm_max_records: 50000
+
+training:
+  seeds: [42, 123, 456, 789, 101112]
+  cv_folds: 5
+  batch_size: 64
+  max_epochs: 100
+  early_stopping_patience: 10
+  hyperparameter_search: grid
+
+evaluation:
+  bootstrap_iterations: 1000
+  confidence_level: 0.95
+  primary_binary_metric: pr_auc
+  primary_multiclass_metric: macro_f1
