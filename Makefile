@@ -2,7 +2,7 @@
 # Multi-Model IDS — common commands.  Run `make help` to list them.
 # ============================================================
 .DEFAULT_GOAL := help
-.PHONY: help env lock test lint format eda tensorboard dashboard \
+.PHONY: help env lock test lint format preprocess eda tensorboard dashboard \
         docker-build docker-up docker-down clean
 
 help:  ## List available commands
@@ -26,6 +26,9 @@ lint:  ## Type-check and check formatting
 format:  ## Auto-format the code
 	black src tests
 	isort src tests
+
+preprocess:  ## Run the preprocessing pipeline (clean, split, encode)
+	python scripts/run_preprocessing.py
 
 eda:  ## Run the full EDA pipeline
 	python scripts/run_eda.py

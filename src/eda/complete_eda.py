@@ -92,7 +92,10 @@ class EDAnalyzer:
         if self._done(key):
             return
         mem = df.memory_usage(deep=True).sum() / 1e6
-        dups = int(df.duplicated().sum())
+        # Every row carries a unique `id`, so duplicates only become
+        # visible once that identifier column is excluded.
+        dup_cols = [c for c in df.columns if c != "id"]
+        dups = int(df[dup_cols].duplicated().sum())
         n_num = len(self._numeric_features(df))
         self.findings[key] = (
             f"- **Records:** {df.shape[0]:,}\n"
@@ -100,7 +103,9 @@ class EDAnalyzer:
             f"({n_num} numeric features, {len(CATEGORICAL_COLS)} categorical "
             f"features, 3 identifier/target columns)\n"
             f"- **In-memory size:** {mem:.1f} MB\n"
-            f"- **Exact duplicate rows:** {dups:,}\n"
+            f"- **Duplicate records** (identical across every field except "
+            f"the `id` index): {dups:,} ({100 * dups / len(df):.1f}%) -- "
+            f"removed during preprocessing to prevent train/test leakage\n"
         )
         self._persist()
         print(f"[eda] {key} done")

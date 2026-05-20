@@ -8,8 +8,8 @@ This report is produced automatically from the raw data. It summarises nine anal
 
 - **Records:** 257,673
 - **Columns:** 45 (39 numeric features, 3 categorical features, 3 identifier/target columns)
-- **In-memory size:** 139.0 MB
-- **Exact duplicate rows:** 0
+- **In-memory size:** 96.7 MB
+- **Duplicate records** (identical across every field except the `id` index): 94,928 (36.8%) -- removed during preprocessing to prevent train/test leakage
 
 
 ## 2. Class distribution
