@@ -7,7 +7,9 @@
 This briefing summarises everything completed so far, explains the reasoning
 behind each step, states clearly how the approved proposal has been followed
 and where it has been adjusted, and gives an honest outlook — including whether
-the project is worth continuing and whether the results could be published.
+the project is worth continuing and whether the results could be published. It
+also raises two method decisions (Section 6) that need your direction: the
+project is deliberately paused at that point until the meeting.
 
 ---
 
@@ -17,11 +19,14 @@ the project is worth continuing and whether the results could be published.
   acquisition, EDA, and the preprocessing pipeline. All three are finished
   (20 May) — the project is on track, slightly ahead.
 - **Completed:** project infrastructure; dataset acquisition and verification;
-  a nine-analysis exploratory data analysis (EDA); and the complete
-  preprocessing, sampling, and class-imbalance pipeline.
-- **Not yet started:** model implementation (the Phase 1 models), and the
-  literature/methodology-grounding step (reviewing the RFA + bigram paper and
-  freezing the experimental protocol) — that is the next task.
+  a nine-analysis exploratory data analysis (EDA); the complete preprocessing,
+  sampling, and class-imbalance pipeline; and the literature/method-grounding
+  step — studying the original RFA + bigram source against the proposal.
+- **Paused, pending this meeting:** the experimental-protocol freeze and all
+  feature-engineering and model-implementation work. The method-grounding step
+  surfaced two discrepancies between the proposal and the original RFA + bigram
+  paper that need your direction before the feature-engineering design can be
+  fixed (Section 6). Work is intentionally held here until the meeting.
 - **Code:** version-controlled and public at
   `github.com/Thommartial/multi-model-ids-project`, MIT-licensed, with a
   reproducible environment and continuous-integration checks.
@@ -57,6 +62,19 @@ A leakage-safe pipeline takes the raw records to model-ready data — cleaning,
 the stratified train/validation/test split, categorical encoding, scaling, a
 sequence-window builder for the recurrent models, stratified subsampling, and
 three class-imbalance tools. The details and rationale are in Section 3.
+
+### 2.4 Literature and method grounding
+
+The original source for the project's feature-engineering method — Hamed, Dara
+& Kremer (2018), "Network intrusion detection system based on recursive feature
+addition and bigram technique" — was located and studied in full. The journal
+article is paywalled, but the first author's PhD thesis (open access via the
+University of Guelph Atrium repository) gives the complete algorithms and was
+used as the primary source. Reading it carefully against the proposal produced
+an important finding — two points where the proposal's description of the method
+differs materially from the published method. This is set out in Section 6, and
+a full written specification has been added to the repository at
+`docs/rfa_bigram_spec.md`.
 
 ---
 
@@ -173,8 +191,8 @@ metrics, and statistical-rigour approach (these are upcoming, not yet built).
 
 8. **Execution order.** The dataset/EDA/preprocessing work was done before the
    literature-grounding step, because EDA findings usefully inform the
-   methodology; the literature step is next and still precedes feature
-   engineering.
+   methodology. The literature-grounding step is now complete and still
+   precedes feature engineering, as planned.
 
 None of these changes the scientific question, the model set, or the two-phase
 scope.
@@ -203,13 +221,83 @@ scope.
 
 ---
 
-## 6. What to expect going forward
+## 6. Method-grounding finding: RFA and the bigram technique
 
-- **Next — methodology grounding:** review Hamed, Dara & Kremer (2018) to lock
-  down the exact Recursive Feature Addition + bigram specification, freeze the
-  experimental protocol, and collect the cited literature.
-- **Feature engineering:** implement and compare filter selection, RFA, and
-  RFA + bigrams (the proposal's feature-engineering study).
+The proposal's feature-engineering study (§5.1) is built on **Recursive Feature
+Addition (RFA)** and a **bigram technique**, both attributed to Hamed, Dara &
+Kremer (2018) — Prof. Dara's own work. Before implementing them, the original
+method was studied in full (Section 2.4). This surfaced two points where the
+proposal's description differs materially from the published method. Neither is
+a mistake to be "corrected" silently — both are design decisions that need your
+direction, because you co-invented the original technique.
+
+### 6.1 What the original paper does
+
+**RFA** is a *forward* feature-selection method: it starts from an empty feature
+set and adds features one at a time, keeping the most useful. In the original
+paper, the "usefulness" of a candidate feature is measured by a **Support Vector
+Machine** — specifically, by how much that feature changes the SVM's internal
+cost function. RFA continues until *every* feature has been ranked; the output
+is a complete ranking, not a shortlist.
+
+**The bigram technique** in the original paper operates on the **raw bytes of a
+packet's payload** — the actual content of network traffic, treated like text.
+It counts every distinct two-character sequence ("bigram"), much as one might
+count letter pairs in a document. It was designed to catch stealthy attacks
+whose signature is hidden in the payload content, and it was applied to a
+dataset (ISCX) that *contains* payload data.
+
+### 6.2 What the proposal describes
+
+The proposal describes **RFA** with a **Random Forest** as the evaluator (not an
+SVM), scoring candidate features by the gain in **validation F1**, and stopping
+early when improvement stalls (rather than ranking every feature).
+
+The proposal describes the **bigram technique** as **pairing consecutive flow
+records** within a sliding window to encode state-transition patterns — not as
+character pairs in packet payloads.
+
+### 6.3 The two discrepancies — and why they matter
+
+**Discrepancy 1 — RFA's engine.** The proposal's RFA (Random Forest + F1 gain +
+early stopping) is RFA *in spirit* — a forward, add-one-feature method — but it
+is not the original algorithm (SVM + cost-function change + full ranking). The
+proposal's version is a reasonable, standard, defensible method and it runs fine
+on this project's data. The only real issue is honesty of citation: it should be
+described as "a forward feature-addition method in the spirit of Hamed, Dara &
+Kremer (2018)", not presented as their exact algorithm. **Decision needed:** is
+the Random-Forest version acceptable as the project's RFA, or should the
+original SVM version be implemented for fidelity — or both, run as a comparison?
+
+**Discrepancy 2 — the bigram technique (the more serious one).** The proposal's
+"bigram" (pairs of flow records) and the original "bigram" (character pairs in
+packet payloads) are *fundamentally different techniques that happen to share a
+name*. This matters for a concrete, unavoidable reason: **the partitioned
+UNSW-NB15 benchmark contains no packet payloads at all** — only summary
+statistics about each network flow. The original payload-bigram technique
+therefore *cannot be run on this dataset*. The proposal's flow-record-pairing
+idea is a separate, new construction. **Decision needed:** (a) reframe the
+flow-record pairing honestly as an *adaptation inspired by* the bigram
+technique, not the bigram technique itself; (b) add a payload-bearing dataset so
+the genuine technique can be replicated; or (c) drop the "bigram" framing
+altogether.
+
+A full written specification of both methods — the original algorithms, the
+proposal's variants, a side-by-side comparison table, and a working
+implementation spec — is in the repository at `docs/rfa_bigram_spec.md`, ready
+to walk through in the meeting.
+
+---
+
+## 7. What to expect going forward
+
+- **Immediately after this meeting — protocol freeze:** with the RFA + bigram
+  questions resolved, freeze the experimental protocol — the exact, written-down
+  rules every model will be evaluated under (splits, seeds, metrics, validation
+  scheme), fixed once so every comparison is fair and nothing can be tuned after
+  results are seen.
+- **Feature engineering:** implement and compare filter selection, RFA, and the
+  flow-pair ("bigram") features — in whatever form the meeting settles on.
 - **Phase 1 models:** rule-based IDS, Random Forest, SVM, XGBoost, 1D-CNN, and
   LSTM, all evaluated under the unified protocol on binary and multiclass tasks,
   with the class-level analysis answering RQ1 and RQ2.
@@ -223,7 +311,7 @@ contribution, not a number on a leaderboard.
 
 ---
 
-## 7. Honest assessment
+## 8. Honest assessment
 
 ### Is the project worth continuing?
 
@@ -262,17 +350,40 @@ published to be a success; publishability is an upside, not a requirement.
 
 ---
 
-## 8. Points to raise with Prof. Dara
+## 9. Points to raise with Prof. Dara
 
-1. Confirm the use of the **partitioned UNSW-NB15 benchmark** (vs the full
+The first two are **blocking decisions** — the feature-engineering work cannot
+be correctly designed until they are settled, and the project is paused until
+they are. The rest are confirmations on work already done and forward-planning
+items.
+
+### Blocking — method decisions (see Section 6 and `docs/rfa_bigram_spec.md`)
+
+1. **RFA's engine.** Is the Random-Forest / validation-F1 forward-selection
+   version acceptable as the project's RFA (cited honestly as "in the spirit
+   of" the original), or should the original SVM cost-function RFA be
+   implemented for fidelity — or both, run as a comparison?
+2. **The bigram technique.** The original payload-bigram method cannot run on
+   UNSW-NB15 (the partitioned benchmark has no payload data). Which way forward:
+   (a) reframe the flow-record pairing as an adaptation inspired by the bigram
+   technique; (b) add a payload-bearing dataset so the genuine technique can be
+   replicated; or (c) drop the "bigram" framing? This is your technique, so your
+   steer matters most here.
+
+### Confirmations on work already done
+
+3. Confirm the use of the **partitioned UNSW-NB15 benchmark** (vs the full
    release) and that the ~87% / size figures in the proposal refer to the full
    release.
-2. Note the **36.8% deduplication** and the resulting dataset size/balance.
-3. Confirm the **TensorFlow-version** and **conda** adjustments are acceptable.
-4. Agree the **hyperparameter-search** approach (per-model).
-5. Discuss the **publication angle** — is the rigour / class-level framing worth
+4. Note the **36.8% deduplication** and the resulting dataset size/balance.
+5. Confirm the **TensorFlow-version** and **conda** adjustments are acceptable.
+6. Agree the **hyperparameter-search** approach (per-model).
+
+### Planning and outlook
+
+7. Discuss the **publication angle** — is the rigour / class-level framing worth
    targeting a venue, and if so which?
-6. Request **University of Guelph HPC access** for the Phase 2 deep-learning
+8. Request **University of Guelph HPC access** for the Phase 2 deep-learning
    runs (worth starting early — approval can take time).
-7. Agree the **end-of-June checkpoint** for the Phase 1 → Phase 2 go/no-go
+9. Agree the **end-of-June checkpoint** for the Phase 1 → Phase 2 go/no-go
    decision.
