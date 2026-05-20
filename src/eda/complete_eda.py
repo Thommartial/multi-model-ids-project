@@ -28,7 +28,7 @@ import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 import seaborn as sns  # noqa: E402
 
-sns.set_theme(style="whitegrid", context="notebook")
+from src.visualization.style import set_academic_style  # noqa: E402
 
 # Columns that are identifiers/targets, not predictive features.
 NON_FEATURE_COLS = ["id", "label", "attack_cat"]
@@ -52,6 +52,7 @@ class EDAnalyzer:
     """Run a full, resumable EDA pass and emit figures + a Markdown report."""
 
     def __init__(self, output_dir: str = "reports/eda"):
+        set_academic_style()
         self.report_dir = Path(output_dir)
         self.fig_dir = self.report_dir / "figures"
         self.fig_dir.mkdir(parents=True, exist_ok=True)
@@ -72,7 +73,7 @@ class EDAnalyzer:
         ]
 
     def _save(self, fig, name: str) -> str:
-        fig.savefig(self.fig_dir / name, dpi=120, bbox_inches="tight")
+        fig.savefig(self.fig_dir / name, dpi=300, bbox_inches="tight")
         plt.close(fig)
         return name
 
@@ -118,15 +119,30 @@ class EDAnalyzer:
             lines.append(f"| {cat} | {cnt:,} | {100 * cnt / len(df):.2f}% |")
 
         fig, axes = plt.subplots(1, 2, figsize=(13, 5))
-        binary.rename({0: "Benign", 1: "Attack"}).plot(
-            kind="bar", ax=axes[0], color=["#4c72b0", "#c44e52"]
+        b = binary.rename({0: "Benign", 1: "Attack"})
+        sns.barplot(
+            x=list(b.index),
+            y=list(b.values),
+            hue=list(b.index),
+            palette=["#4c72b0", "#c44e52"],
+            legend=False,
+            ax=axes[0],
         )
         axes[0].set_title("Binary label distribution")
+        axes[0].set_xlabel("")
         axes[0].set_ylabel("Records")
-        axes[0].tick_params(axis="x", rotation=0)
-        multi.plot(kind="bar", ax=axes[1], color="#4c72b0", logy=True)
+        sns.barplot(
+            x=list(multi.index),
+            y=list(multi.values),
+            hue=list(multi.index),
+            legend=False,
+            ax=axes[1],
+        )
+        axes[1].set_yscale("log")
         axes[1].set_title("Attack-category distribution (log scale)")
-        axes[1].set_ylabel("Records (log)")
+        axes[1].set_xlabel("")
+        axes[1].set_ylabel("Records (log scale)")
+        axes[1].tick_params(axis="x", rotation=45)
         fig.tight_layout()
         fname = self._save(fig, "01_class_distribution.png")
 
