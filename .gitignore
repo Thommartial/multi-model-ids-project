@@ -62,3 +62,6 @@ wandb/
 # ===== OS =====
 .DS_Store
 Thumbs.db
+
+# EDA resume-cache (regenerable)
+reports/eda/_findings.json
