@@ -10,8 +10,10 @@ data:
   train_ratio: 0.70
   val_ratio: 0.15
   test_ratio: 0.15
-  sample_size_binary: 300000
-  sample_size_multiclass: 150000
+  # After deduplication the training split is ~114k records; the
+  # binary/multiclass caps below are effectively no-ops (full split used).
+  sample_size_binary: 120000
+  sample_size_multiclass: 120000
   sample_size_robustness: 75000
 
 features:

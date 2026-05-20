@@ -35,9 +35,11 @@ class DataConfig:
     train_ratio: float = 0.70
     val_ratio: float = 0.15
     test_ratio: float = 0.15
-    # Stratified sample sizes (proposal Section 4.3)
-    sample_size_binary: int = 300_000
-    sample_size_multiclass: int = 150_000
+    # Stratified sample sizes. After deduplication the training split is
+    # ~114k records, so the binary/multiclass caps are effectively no-ops
+    # (the full split is used); the robustness sweep uses a subsample.
+    sample_size_binary: int = 120_000
+    sample_size_multiclass: int = 120_000
     sample_size_robustness: int = 75_000
 
     def __post_init__(self) -> None:
