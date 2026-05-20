@@ -11,7 +11,7 @@
 # ============================================================
 
 # --- Core scientific / ML stack ---
-tensorflow>=2.16,<2.18
+tensorflow[and-cuda]>=2.16,<2.18    # [and-cuda] pulls the GPU runtime libs (CUDA/cuDNN)
 numpy>=1.26
 pandas>=2.1
 scipy>=1.11
