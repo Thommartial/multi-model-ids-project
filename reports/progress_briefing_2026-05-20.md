@@ -213,6 +213,11 @@ scope.
   measurement below refutes. The likely cause of the published error is the
   unique `id` row-counter: left in place, it makes every row look distinct, so a
   duplicate check returns zero. The per-class breakdown is in the table below.
+- **The benchmark's own split also leaks.** 940 distinct records appear in
+  *both* the pre-made training and testing files — surfacing as 4,247 test rows
+  (5.16% of the test set) whose exact content is already present in training.
+  This is the part of the duplication that is unambiguously train→test leakage
+  for anyone using UNSW-NB15's standard split. Details after the table.
 - **Severe class imbalance.** After deduplication the largest class outnumbers
   the smallest by ~501× (Normal 85,722 vs Worms 171). This is the central
   challenge the project's research questions address.
@@ -243,6 +248,17 @@ scope.
 | Shellcode | 378 | 0 | 0.0 |
 | Worms | 44 | 0 | 0.0 |
 | **Total** | **82,332** | **26,387** | **32.0** |
+
+**Cross-partition overlap — the leakage-critical slice.** Most of the 36.8%
+pooled duplication is *within-file* redundancy, but a distinct part is records
+shared *between* the benchmark's training and testing files: 940 distinct
+records, surfacing as 4,247 test rows (5.16%) and 8,421 train rows (4.80%). The
+overlap is very uneven by class — 25.9% of test Reconnaissance records also
+appear in training, then Generic (9.0%), DoS (4.9%) and Normal (3.2%); Worms
+has none. A study using the pre-made split therefore tests partly on memorised
+data, with Reconnaissance the most inflated. This project pools both files and
+re-splits from scratch, so deduplication removes this overlap before the new
+split is drawn.
 
 This is a concrete, reproducible result that strengthens the project's
 "rigorous re-evaluation" angle (Section 8): the project can report a measured
