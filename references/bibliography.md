@@ -23,21 +23,32 @@ project's *methods* directly depend on.
   same methods in full, is open access and held locally:*
   `references/Hamed_RFA_UoGuelph_atrium.pdf`.
 
-## Data-quality / duplicate evidence
+## Data-quality evidence (duplicates, imbalance, overlap)
 
-- **Zoghi, Z., & Serpen, G. (2024).** UNSW-NB15 computer security dataset:
-  analysis through visualization. *Security and Privacy*, Wiley. — Documents
-  ~42% duplicate records in UNSW-NB15.
-  *Access: open (arXiv:2101.05067) — `references/Zoghi_Serpen_2021_UNSW-NB15_analysis.pdf`.*
-- **An analysis of the KDD99 and UNSW-NB15 datasets for the intrusion detection
-  system (2020).** *Symmetry*, 12(10):1666, MDPI. — Independent confirmation of
-  the duplicates; a five-group feature taxonomy for UNSW-NB15.
-  *Access: open access (MDPI) — download from the article page; full author
-  list on that page.*
+- **Al-Daweri, M. S., et al. (2020).** An analysis of the KDD99 and UNSW-NB15
+  datasets for the intrusion detection system. *Symmetry*, 12(10):1666, MDPI. —
+  The published quantification of UNSW-NB15 duplicate records: **42.24% of the
+  training set**, concentrated in the Generic, DoS and Exploits classes. The
+  paper also claims the **testing set contains no duplicates** — a direct
+  measurement of the partitioned testing file contradicts this (~32% exact
+  duplicate records; see the progress briefing §5). Likely cause: the paper did
+  not exclude the unique `id` row-counter when checking the testing file. Also
+  gives a five-group feature taxonomy for UNSW-NB15.
+  *Access: open access (MDPI) — download from the article page; confirm the
+  full author list there.*
 - **Tavallaee, M., Bagheri, E., Lu, W., & Ghorbani, A. (2009).** A detailed
   analysis of the KDD CUP 99 data set. *IEEE CISDA*. — The classic precedent:
-  duplicate records inflate IDS results; motivated the NSL-KDD dataset.
+  duplicate records — in both the training and testing sets — inflate IDS
+  results; motivated the NSL-KDD dataset.
   *Access: IEEE (paywalled).*
+- **Zoghi, Z., & Serpen, G. (2024).** UNSW-NB15 computer security dataset:
+  analysis through visualization. *Security and Privacy*, Wiley. — Visual
+  analysis identifying **class imbalance** and **class overlap** as the two
+  central problems of UNSW-NB15. Note: this paper analyses redundant *features*,
+  not duplicate *records* — it is **not** the source of the ~42% duplicate-record
+  figure (that is Al-Daweri et al. 2020, above). Cited here for the imbalance
+  and overlap findings, which the project's own EDA corroborates.
+  *Access: open (arXiv:2101.05067) — `references/Zoghi_Serpen_2021_UNSW-NB15_analysis.pdf`.*
 
 ## SOTA baselines (Phase 2)
 

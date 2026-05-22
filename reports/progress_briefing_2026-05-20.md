@@ -99,8 +99,8 @@ if the same record appears in both the training and test sets, a model can
 memorise it, and the test score then measures memory, not detection — this is
 "train/test leakage". Removing duplicates is required for an honest evaluation;
 the proposal mandates it (§5.1), and published work confirms the problem is real
-and large in UNSW-NB15 (Zoghi & Serpen, 2024, report 42.24% duplicates in its
-training set). The working dataset is now **162,745 unique records**.
+and large in UNSW-NB15 (Al-Daweri et al., 2020, report 42.24% duplicate records
+in the training set). The working dataset is now **162,745 unique records**.
 
 **4. Stratified 70/15/15 split.** The data is split into training (fit the
 models), validation (tune them), and test (one final, untouched estimate of
@@ -205,6 +205,14 @@ scope.
   concentrated in the Generic and DoS attack types (Generic fell from ~58,900 to
   7,599 records, DoS from ~16,400 to 5,500) — these attacks produce highly
   repetitive flow records.
+- **The testing partition is duplicate-heavy too — contradicting the published
+  record.** Measured directly, the raw UNSW-NB15 *testing* file holds 26,387
+  exact-duplicate records out of 82,332 (32.0%). This matters because the most
+  cited quantification of UNSW-NB15 duplicates (Al-Daweri et al., 2020) reports
+  42.24% in the training set but states the testing set has *none* — a claim the
+  measurement below refutes. The likely cause of the published error is the
+  unique `id` row-counter: left in place, it makes every row look distinct, so a
+  duplicate check returns zero. The per-class breakdown is in the table below.
 - **Severe class imbalance.** After deduplication the largest class outnumbers
   the smallest by ~501× (Normal 85,722 vs Worms 171). This is the central
   challenge the project's research questions address.
@@ -218,6 +226,27 @@ scope.
   ranked the connection-count features (`ct_dst_sport_ltm`, `ct_srv_dst`, …) as
   the strongest separators of attack types — a useful early signal for the
   feature-engineering work.
+
+**Exact-duplicate records in the raw UNSW-NB15 testing file** (82,332 rows,
+`id` excluded; first occurrence of each record kept, redundant copies counted):
+
+| Attack class | Test records | Duplicate records | % |
+|---|---:|---:|---:|
+| Generic | 18,871 | 15,214 | 80.6 |
+| DoS | 4,089 | 2,371 | 58.0 |
+| Backdoor | 583 | 237 | 40.7 |
+| Analysis | 677 | 231 | 34.1 |
+| Exploits | 11,132 | 3,523 | 31.6 |
+| Reconnaissance | 3,496 | 793 | 22.7 |
+| Fuzzers | 6,062 | 1,224 | 20.2 |
+| Normal | 37,000 | 2,794 | 7.6 |
+| Shellcode | 378 | 0 | 0.0 |
+| Worms | 44 | 0 | 0.0 |
+| **Total** | **82,332** | **26,387** | **32.0** |
+
+This is a concrete, reproducible result that strengthens the project's
+"rigorous re-evaluation" angle (Section 8): the project can report a measured
+correction to a published dataset claim, not merely repeat existing numbers.
 
 ---
 
