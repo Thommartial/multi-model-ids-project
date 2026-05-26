@@ -117,6 +117,26 @@ Per-seed artefacts (every model × every seed):
 * `metrics.json`
 * `confusion_matrix_val.csv` / `confusion_matrix_test.csv`
 * `metadata.json` (seed, n_features, runtime, timestamp, task)
+* For the two DL models: a `tensorboard/` subfolder with the live
+  training curves (loss, accuracy, val loss, val accuracy).
+
+### Watching the DL training in TensorBoard
+
+While `cnn_1d` or `lstm` is running (or after), open a second terminal
+and launch the dashboard:
+
+```bash
+cd ~/Desktop/S2026/IDS/IDS_Project/multi-model-ids-project
+conda activate multi-model-ids
+make tensorboard
+```
+
+Then open <http://localhost:6006> in a browser. Every model × every
+seed appears as its own run (named after the path
+`reports/runs/<model>/seed_<n>/tensorboard`), so you can compare seeds
+or models side-by-side on the same axes. `make tensorboard` is just a
+shortcut for `tensorboard --logdir=reports/runs --port=6006` -- you can
+also run that command directly if you don't have `make` installed.
 
 ---
 

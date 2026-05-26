@@ -130,6 +130,11 @@ class OneDCNN:
         self.cfg = OneDCNNConfig(**hparams)
         self._model: Any = None
         self._encoder = _LabelEncoder()
+        self._tensorboard_dir: str | None = None
+
+    def set_tensorboard_dir(self, path: str | Path) -> None:
+        """Enable TensorBoard logging; the harness calls this per seed."""
+        self._tensorboard_dir = str(path)
 
     def _build(self, n_features: int, n_classes: int):
         import tensorflow as tf
@@ -187,6 +192,15 @@ class OneDCNN:
                     monitor="val_loss",
                     patience=self.cfg.early_stopping_patience,
                     restore_best_weights=True,
+                )
+            )
+        if self._tensorboard_dir is not None:
+            Path(self._tensorboard_dir).mkdir(parents=True, exist_ok=True)
+            callbacks.append(
+                tf.keras.callbacks.TensorBoard(
+                    log_dir=self._tensorboard_dir,
+                    histogram_freq=0,
+                    write_graph=True,
                 )
             )
 
@@ -295,6 +309,11 @@ class LSTMClassifier:
         self.cfg = LSTMConfig(**hparams)
         self._model: Any = None
         self._encoder = _LabelEncoder()
+        self._tensorboard_dir: str | None = None
+
+    def set_tensorboard_dir(self, path: str | Path) -> None:
+        """Enable TensorBoard logging; the harness calls this per seed."""
+        self._tensorboard_dir = str(path)
 
     def _build(self, n_features: int, n_classes: int):
         import tensorflow as tf
@@ -353,6 +372,15 @@ class LSTMClassifier:
                     monitor="val_loss",
                     patience=self.cfg.early_stopping_patience,
                     restore_best_weights=True,
+                )
+            )
+        if self._tensorboard_dir is not None:
+            Path(self._tensorboard_dir).mkdir(parents=True, exist_ok=True)
+            callbacks.append(
+                tf.keras.callbacks.TensorBoard(
+                    log_dir=self._tensorboard_dir,
+                    histogram_freq=0,
+                    write_graph=True,
                 )
             )
 

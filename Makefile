@@ -33,8 +33,8 @@ preprocess:  ## Run the preprocessing pipeline (clean, split, encode)
 eda:  ## Run the full EDA pipeline
 	python scripts/run_eda.py
 
-tensorboard:  ## Launch TensorBoard
-	tensorboard --logdir=experiments/logs/tensorboard --port=6006
+tensorboard:  ## Launch TensorBoard on the per-seed DL run logs
+	tensorboard --logdir=reports/runs --port=6006
 
 dashboard:  ## Launch the Streamlit dashboard
 	streamlit run dashboard/app.py

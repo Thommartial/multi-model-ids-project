@@ -210,6 +210,12 @@ def run_model_seeds(
     t0 = time.time()
     for seed in seeds:
         model = model_factory(seed)
+        # If the wrapper supports TensorBoard logging and we have a save_dir,
+        # write logs alongside the rest of this seed's artefacts so launching
+        # `tensorboard --logdir reports/runs` shows every model and seed.
+        if save_dir_path is not None and hasattr(model, "set_tensorboard_dir"):
+            tb_dir = save_dir_path / name / f"seed_{seed}" / "tensorboard"
+            model.set_tensorboard_dir(str(tb_dir))
         seed_t0 = time.time()
         model.fit(
             x_train[feature_set],
