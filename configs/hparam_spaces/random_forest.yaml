@@ -1,0 +1,9 @@
+# Hyperparameter search space -- Random Forest
+# Method: grid; Selection target: val macro-F1
+# Frozen: 2026-05-26 (Task 2.2)
+n_estimators: [200, 400, 800]
+max_depth: [null, 10, 20, 40]
+min_samples_split: [2, 5, 10]
+min_samples_leaf: [1, 2, 4]
+max_features: [sqrt, log2, 0.3]
+class_weight: [balanced]

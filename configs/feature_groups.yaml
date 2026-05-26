@@ -1,0 +1,52 @@
+# Semantic feature groups for the RQ1 analysis
+# Source: Moustafa & Slay (2015) feature documentation; Al-Daweri et al. (2020)
+# Frozen: 2026-05-26 (Task 2.2)
+# Note: one-hot columns derived from proto/service/state inherit the parent's group.
+
+basic_flow:
+  - dur
+  - proto
+  - service
+  - state
+  - spkts
+  - dpkts
+  - sbytes
+  - dbytes
+  - rate
+  - sload
+  - dload
+  - sloss
+  - dloss
+content:
+  - swin
+  - dwin
+  - stcpb
+  - dtcpb
+  - smean
+  - dmean
+  - response_body_len
+time:
+  - sinpkt
+  - dinpkt
+  - sjit
+  - djit
+  - tcprtt
+  - synack
+  - ackdat
+general_purpose:
+  - sttl
+  - dttl
+  - trans_depth
+  - is_ftp_login
+  - ct_ftp_cmd
+  - is_sm_ips_ports
+connection_tracking:
+  - ct_state_ttl
+  - ct_flw_http_mthd
+  - ct_srv_src
+  - ct_srv_dst
+  - ct_dst_ltm
+  - ct_src_ltm
+  - ct_src_dport_ltm
+  - ct_dst_sport_ltm
+  - ct_dst_src_ltm

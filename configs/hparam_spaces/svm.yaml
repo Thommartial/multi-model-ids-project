@@ -1,0 +1,10 @@
+# Hyperparameter search space -- SVM (RBF kernel)
+# Method: grid (small; SVM is the slowest learner here)
+# Selection target: val macro-F1
+# Frozen: 2026-05-26 (Task 2.2)
+# Note: per protocol Sec. 9, the SVM trains on a stratified subsample of
+# the training pool capped at 30,000 records (validation/test are full).
+kernel: [rbf]
+C: [0.1, 1.0, 10.0]
+gamma: [scale, 0.001, 0.01]
+class_weight: [balanced]

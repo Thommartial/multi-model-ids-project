@@ -1,0 +1,13 @@
+# Hyperparameter search space -- LSTM
+# Method: Optuna (TPE); Budget: 30 trials; Selection target: val macro-F1
+# Frozen: 2026-05-26 (Task 2.2)
+window_size:    {type: categorical, choices: [16, 32, 64]}
+lstm_layers:    {type: int,         low: 1, high: 3}
+hidden_size:    {type: categorical, choices: [64, 128, 256]}
+bidirectional:  {type: categorical, choices: [false, true]}
+dropout:        {type: float,       low: 0.0, high: 0.5}
+optimizer:      {type: categorical, choices: [adam, adamw]}
+learning_rate:  {type: float,       low: 1.0e-4, high: 1.0e-2, log: true}
+batch_size:     {type: categorical, choices: [128, 256]}
+max_epochs: 100
+early_stopping_patience: 10

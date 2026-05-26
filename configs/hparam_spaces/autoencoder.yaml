@@ -1,0 +1,11 @@
+# Hyperparameter search space -- Autoencoder (Phase 2)
+# Method: Optuna (TPE); Budget: 30 trials
+# Selection target: val reconstruction error (trained on Normal only)
+# Frozen: 2026-05-26 (Task 2.2)
+encoder_dims:  {type: categorical, choices: ["190,96,48", "190,128,64", "190,128,64,32"]}
+activation:    {type: categorical, choices: [relu, leaky_relu]}
+dropout:       {type: float,       low: 0.0, high: 0.3}
+learning_rate: {type: float,       low: 1.0e-4, high: 1.0e-2, log: true}
+batch_size:    {type: categorical, choices: [128, 256, 512]}
+max_epochs: 200
+early_stopping_patience: 15
