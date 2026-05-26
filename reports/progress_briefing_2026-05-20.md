@@ -2,7 +2,7 @@
 
 **Prepared for:** the supervision meeting with Prof. Rozita Dara
 **Student:** Thomas Martial Ekwelle Epalle (1406946) · CIS\*6560 · MCTI, University of Guelph
-**Date:** 20 May 2026
+**Date:** 20 May 2026 · **Meeting held:** 22 May 2026 · **Status:** the two blocking method decisions in Section 6 were resolved with Prof. Dara (see §6.4); work has resumed. Items 7–9 in §9 (publication angle, HPC access, end-of-June checkpoint) were not discussed and remain open.
 
 This briefing summarises everything completed so far, explains the reasoning
 behind each step, states clearly how the approved proposal has been followed
@@ -332,6 +332,25 @@ proposal's variants, a side-by-side comparison table, and a working
 implementation spec — is in the repository at `docs/rfa_bigram_spec.md`, ready
 to walk through in the meeting.
 
+### 6.4 Resolution (post-meeting, 2026-05-22)
+
+Both discrepancies were resolved with Prof. Dara:
+
+1. **RFA engine — implement *both*, as a comparison.** The published SVM
+   cost-function RFA (Hamed, Dara & Kremer 2018) and the proposal's
+   RF / validation-F1 forward-selection RFA will both be implemented; the
+   feature-engineering ablation compares them. This is itself a contribution —
+   a side-by-side of the original RFA against a contemporary RF/F1 variant on
+   UNSW-NB15.
+2. **Bigram framing — reframe flow-pair features as an *adaptation*.** The
+   proposal's pairing of consecutive flow records is kept, cited honestly as
+   *inspired by, not identical to* the Hamed payload-bigram technique. No new
+   payload-bearing dataset is needed for Phase 1.
+
+The working specification in `docs/rfa_bigram_spec.md` (§§6–7) has been
+updated to reflect these decisions, and work has resumed with Task 2.2
+(experimental protocol freeze) → Part 5 (feature-engineering implementation).
+
 ---
 
 ## 7. What to expect going forward
@@ -397,23 +416,19 @@ published to be a success; publishability is an upside, not a requirement.
 
 ## 9. Points to raise with Prof. Dara
 
-The first two are **blocking decisions** — the feature-engineering work cannot
-be correctly designed until they are settled, and the project is paused until
-they are. The rest are confirmations on work already done and forward-planning
-items.
+The first two were **blocking decisions** — settled in the 2026-05-22 meeting.
+The rest are confirmations on work already done and forward-planning items.
 
 ### Blocking — method decisions (see Section 6 and `docs/rfa_bigram_spec.md`)
 
-1. **RFA's engine.** Is the Random-Forest / validation-F1 forward-selection
-   version acceptable as the project's RFA (cited honestly as "in the spirit
-   of" the original), or should the original SVM cost-function RFA be
-   implemented for fidelity — or both, run as a comparison?
-2. **The bigram technique.** The original payload-bigram method cannot run on
-   UNSW-NB15 (the partitioned benchmark has no payload data). Which way forward:
-   (a) reframe the flow-record pairing as an adaptation inspired by the bigram
-   technique; (b) add a payload-bearing dataset so the genuine technique can be
-   replicated; or (c) drop the "bigram" framing? This is your technique, so your
-   steer matters most here.
+1. ✓ **Resolved (2026-05-22) — RFA's engine: implement *both*, as a
+   comparison.** Both the original SVM cost-function RFA and the proposal's
+   RF / validation-F1 forward selection are implemented; the ablation compares
+   them.
+2. ✓ **Resolved (2026-05-22) — Bigram technique: reframe flow-pair features as
+   an *adaptation*.** The proposal's pairing of consecutive flow records is
+   kept, cited as *inspired by* the Hamed payload-bigram technique. No new
+   payload-bearing dataset is added for Phase 1.
 
 ### Confirmations on work already done
 
@@ -424,7 +439,7 @@ items.
 5. Confirm the **TensorFlow-version** and **conda** adjustments are acceptable.
 6. Agree the **hyperparameter-search** approach (per-model).
 
-### Planning and outlook
+### Planning and outlook — *not discussed in the 2026-05-22 meeting; carry to next meeting*
 
 7. Discuss the **publication angle** — is the rigour / class-level framing worth
    targeting a venue, and if so which?

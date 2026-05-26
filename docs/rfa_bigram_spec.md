@@ -117,36 +117,47 @@ It was applied to the **ISCX** dataset, which *contains payload content*.
 
 ---
 
-## 6. Working specification for Part 5 (pending Prof. Dara's confirmation)
+## 6. Working specification for Part 5 (confirmed with Prof. Dara, 2026-05-22)
 
-Until the discrepancies are resolved, Part 5 will implement the **proposal's
-described variants**, since the proposal is the approved document — but with
-honest framing:
+Both discrepancies were discussed in the 22 May 2026 supervision meeting and
+resolved. The feature-engineering study implements:
 
-- **Filter selection:** Extra-Trees importance + mutual information, consensus
-  of the two (proposal §5.1) — no discrepancy here.
-- **RFA:** forward selection from an empty set; at each step add the feature
-  giving the largest gain in validation **macro-F1** of a shallow Random
-  Forest; stop when the gain over a small patience window falls below a
-  threshold. Documented as *"RFA-style forward selection, after Hamed et al.
-  2018."*
-- **"Bigram" / flow-pair features:** pair each flow record with its predecessor
-  within a sliding window and derive difference / ratio / concatenation
-  features. Documented as a **flow-temporal feature construction inspired by**
-  — not identical to — the Hamed et al. payload-bigram technique.
+- **Filter selection.** Extra-Trees importance + mutual information, consensus
+  of the two (proposal §5.1) — no discrepancy.
+- **RFA — original (Hamed, Dara & Kremer 2018).** Forward selection from an
+  empty set; at each step add the feature whose addition produces the largest
+  change in the **SVM (RBF kernel) cost function** (thesis Eq. 3.10:
+  `DJ = ½αᵀHα − ½αᵀH₍₊ᵢ₎α`); rank all features. Implementation follows the
+  thesis Algorithm 2.
+- **RFA — proposal's variant.** Forward selection from an empty set; at each
+  step add the feature giving the largest gain in validation **macro-F1** of a
+  shallow Random Forest; stop when the gain over a small patience window falls
+  below a threshold.
+- **Flow-pair features (the proposal's "bigram").** Pair each flow record with
+  its predecessor within a sliding window and derive difference / ratio /
+  concatenation features. Documented and cited as a **flow-temporal feature
+  construction inspired by** — not identical to — the Hamed et al. payload-
+  bigram technique. The original payload-bigram cannot run on UNSW-NB15; Phase
+  1 does not introduce a payload-bearing dataset.
 
-The ablation (proposal §5.1) then compares: baseline, filter-only, RFA, and
-RFA + flow-pair features.
+The ablation then compares: baseline, filter-only, RFA (original SVM),
+RFA (proposal RF/F1), and RFA + flow-pair features. The two RFA variants are
+evaluated with the same downstream classifier on the same split so the
+comparison is clean.
 
 ---
 
-## 7. Decision needed from Prof. Dara
+## 7. Decisions resolved with Prof. Dara (2026-05-22)
 
-1. Is the **RF/F1 forward-selection RFA** acceptable as the project's RFA, or
-   should the original **SVM cost-function RFA** be implemented for fidelity
-   (or both, as a comparison)?
-2. The **bigram question:** the original payload-bigram technique cannot run on
-   UNSW-NB15 (no payloads). Options: (a) reframe the flow-pair features
-   honestly as an *adaptation*, not the Hamed bigram; (b) add a payload-bearing
-   dataset so the true technique can be replicated; or (c) drop the "bigram"
-   framing. Her guidance is needed — this is her technique.
+1. **RFA engine — implement both, as a comparison.** The published SVM
+   cost-function RFA (Hamed, Dara & Kremer 2018) and the proposal's
+   RF / validation-F1 forward-selection RFA are both implemented; the ablation
+   compares them. This is itself a contribution: a side-by-side of the original
+   RFA against a contemporary RF/F1 variant on UNSW-NB15.
+2. **Bigram framing — reframe flow-pair features as an adaptation.** The
+   proposal's pairing of consecutive flow records is kept, cited honestly as
+   *inspired by, not identical to* the Hamed payload-bigram technique. No new
+   payload-bearing dataset is added for Phase 1.
+
+Items deferred to a later meeting (not blocking next steps): publication angle,
+HPC access for Phase 2, and the end-of-June Phase-1 → Phase-2 checkpoint.
