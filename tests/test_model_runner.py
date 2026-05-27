@@ -63,8 +63,10 @@ def test_run_model_seeds_writes_artefacts(tmp_path: Path) -> None:
         save_dir=tmp_path,
     )
     # Per-seed folder is created with all the expected files.
+    # New layout: <save_dir>/<model>/<task>/seed_<n>/  (task added so binary
+    # and multiclass runs of the same model do not collide).
     for seed in (42, 43):
-        seed_dir = tmp_path / "rule_based" / f"seed_{seed}"
+        seed_dir = tmp_path / "rule_based" / "multiclass" / f"seed_{seed}"
         assert seed_dir.is_dir()
         assert (seed_dir / "metrics.json").exists()
         assert (seed_dir / "metadata.json").exists()

@@ -210,12 +210,14 @@ def run_model_seeds(
     t0 = time.time()
     for seed in seeds:
         model = model_factory(seed)
+        # Per-seed root: includes task so a model trained on multiclass
+        # cannot overwrite the same model trained on binary (or vice versa).
+        seed_root = save_dir_path / name / task / f"seed_{seed}" if save_dir_path is not None else None
         # If the wrapper supports TensorBoard logging and we have a save_dir,
         # write logs alongside the rest of this seed's artefacts so launching
         # `tensorboard --logdir reports/runs` shows every model and seed.
-        if save_dir_path is not None and hasattr(model, "set_tensorboard_dir"):
-            tb_dir = save_dir_path / name / f"seed_{seed}" / "tensorboard"
-            model.set_tensorboard_dir(str(tb_dir))
+        if seed_root is not None and hasattr(model, "set_tensorboard_dir"):
+            model.set_tensorboard_dir(str(seed_root / "tensorboard"))
         seed_t0 = time.time()
         model.fit(
             x_train[feature_set],
@@ -261,9 +263,9 @@ def run_model_seeds(
                 f"({seed_runtime:.1f}s)"
             )
 
-        if save_dir_path is not None:
+        if seed_root is not None:
             _save_seed_artefacts(
-                seed_dir=save_dir_path / name / f"seed_{seed}",
+                seed_dir=seed_root,
                 name=name,
                 seed=int(seed),
                 task=task,

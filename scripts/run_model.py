@@ -146,7 +146,7 @@ def main() -> None:
     print(f"[run_model] {args.model} / test macro-F1: "
           f"{summary['mean']:.4f} ± {summary['std']:.4f}  "
           f"(95% CI [{summary['ci95_lo']:.4f}, {summary['ci95_hi']:.4f}])")
-    print(f"[run_model] per-seed artefacts saved under {args.save_dir}/{args.model}/")
+    print(f"[run_model] per-seed artefacts saved under {args.save_dir}/{args.model}/{args.task}/")
 
 
 if __name__ == "__main__":
