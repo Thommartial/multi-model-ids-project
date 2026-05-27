@@ -1,0 +1,8 @@
+{
+  "model": "random_forest",
+  "seed": 42,
+  "task": "multiclass",
+  "n_features": 190,
+  "runtime_seconds": 29.793137550354004,
+  "timestamp": "2026-05-26 16:03:59"
+}

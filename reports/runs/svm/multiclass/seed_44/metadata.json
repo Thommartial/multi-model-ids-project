@@ -1,0 +1,8 @@
+{
+  "model": "svm",
+  "seed": 44,
+  "task": "multiclass",
+  "n_features": 190,
+  "runtime_seconds": 1324.2688846588135,
+  "timestamp": "2026-05-26 17:09:17"
+}

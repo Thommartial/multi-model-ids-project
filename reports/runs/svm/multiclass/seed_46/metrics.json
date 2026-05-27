@@ -1,0 +1,7 @@
+{
+  "runtime_s": 903.9688904285431,
+  "val_macro_f1": 0.3916815700336748,
+  "val_balanced_accuracy": 0.5377559528005407,
+  "test_macro_f1": 0.3950574172662949,
+  "test_balanced_accuracy": 0.5448586718051371
+}

@@ -1,0 +1,8 @@
+{
+  "model": "rule_based",
+  "seed": 42,
+  "task": "multiclass",
+  "n_features": 190,
+  "runtime_seconds": 1.536820888519287,
+  "timestamp": "2026-05-26 16:03:17"
+}

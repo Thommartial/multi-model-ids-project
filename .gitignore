@@ -49,6 +49,9 @@ htmlcov/
 *.pkl
 *.joblib
 
+# ===== Per-run TensorBoard logs (regenerable, can grow large) =====
+reports/runs/**/tensorboard/
+
 # ===== Experiment tracking =====
 mlflow.db
 mlflow_artifacts/

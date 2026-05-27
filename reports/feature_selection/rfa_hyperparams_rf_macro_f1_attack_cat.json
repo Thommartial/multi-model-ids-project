@@ -1,0 +1,28 @@
+{
+  "method": "rf_macro_f1",
+  "hyperparams": {
+    "n_estimators": 100,
+    "max_depth": 10,
+    "patience": 3,
+    "improvement_threshold": 0.001,
+    "seed": 42
+  },
+  "runtime_seconds": 5571.706027030945,
+  "n_selected": 14,
+  "selected": [
+    "sbytes",
+    "dbytes",
+    "ct_dst_src_ltm",
+    "sttl",
+    "state_infrequent_sklearn",
+    "service_-",
+    "smean",
+    "proto_unas",
+    "sjit",
+    "service_http",
+    "proto_crtp",
+    "service_ftp",
+    "proto_pup",
+    "proto_ipv6-no"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "model": "xgboost",
+  "seed": 46,
+  "task": "multiclass",
+  "n_features": 190,
+  "runtime_seconds": 79.51742649078369,
+  "timestamp": "2026-05-26 17:52:41"
+}

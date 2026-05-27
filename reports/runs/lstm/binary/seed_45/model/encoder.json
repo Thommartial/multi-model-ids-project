@@ -1,0 +1,1 @@
+{"to_int": {"0": 0, "1": 1}, "to_label": [0, 1], "cfg": {"window_size": 8, "lstm_layers": 1, "hidden_size": 128, "bidirectional": false, "dropout": 0.2, "learning_rate": 0.001, "batch_size": 256, "max_epochs": 50, "early_stopping_patience": 5}, "seed": 45}
