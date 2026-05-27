@@ -167,6 +167,7 @@ def run_model_seeds(
     task: str = "multiclass",
     feature_set: list[str] | None = None,
     save_dir: Path | str | None = None,
+    tag: str | None = None,
     use_class_weights: bool = True,
     verbose: bool = False,
 ) -> ModelRunResult:
@@ -210,9 +211,16 @@ def run_model_seeds(
     t0 = time.time()
     for seed in seeds:
         model = model_factory(seed)
-        # Per-seed root: includes task so a model trained on multiclass
-        # cannot overwrite the same model trained on binary (or vice versa).
-        seed_root = save_dir_path / name / task / f"seed_{seed}" if save_dir_path is not None else None
+        # Per-seed root: includes task (and optional ``tag`` subdir for tuned
+        # variants) so a new run never overwrites an existing one.
+        # Layout: <save_dir>/<model>/<task>[/<tag>]/seed_<n>/
+        if save_dir_path is not None:
+            base = save_dir_path / name / task
+            if tag:
+                base = base / tag
+            seed_root = base / f"seed_{seed}"
+        else:
+            seed_root = None
         # If the wrapper supports TensorBoard logging and we have a save_dir,
         # write logs alongside the rest of this seed's artefacts so launching
         # `tensorboard --logdir reports/runs` shows every model and seed.

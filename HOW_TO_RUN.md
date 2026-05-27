@@ -110,6 +110,32 @@ for m in rule_based random_forest svm xgboost cnn_1d lstm; do
 done
 ```
 
+### Tuning a model without losing the headline run (`--tag` + `--hparam`)
+
+The runner accepts two extra flags:
+
+* `--tag NAME` — adds a subfolder under `<save_dir>/<model>/<task>/`, so a
+  tuned variant never overwrites the existing headline result.
+* `--hparam KEY=VAL` — repeatable; overrides any hyperparameter exposed
+  by the model wrapper. Values are parsed with `yaml.safe_load` so
+  `learning_rate=5e-4` becomes a float, `bidirectional=true` becomes a
+  bool, etc.
+
+For example, a tuned CNN with a lower learning rate, more epochs, and
+more patience lands at
+`reports/runs/cnn_1d/multiclass/tuned_lr5e4_ep150/seed_*/`, leaving the
+original `reports/runs/cnn_1d/multiclass/seed_*/` untouched:
+
+```bash
+python scripts/run_model.py --model cnn_1d --gpu \
+  --tag tuned_lr5e4_ep150 \
+  --hparam learning_rate=5e-4 --hparam max_epochs=150 \
+  --hparam early_stopping_patience=15
+```
+
+The DL configurations worth trying first (since the headline DL run
+under-performs) are documented below.
+
 Per-seed artefacts (every model × every seed):
 
 * `model.joblib` (or `model.keras` for DL)
@@ -137,6 +163,58 @@ seed appears as its own run (named after the path
 or models side-by-side on the same axes. `make tensorboard` is just a
 shortcut for `tensorboard --logdir=reports/runs --port=6006` -- you can
 also run that command directly if you don't have `make` installed.
+
+---
+
+## 2b. Tuning the deep-learning models
+
+The headline DL run uses the default hyperparameters from
+`OneDCNNConfig` / `LSTMConfig`. On UNSW-NB15 those gave 1D-CNN
+multiclass macro-F1 around 0.14 and binary around 0.69 — much weaker
+than the tree models and below what these architectures *should*
+reach. The most likely cause is training-config (LR too high,
+patience too short, model converging into a class-collapse minimum)
+rather than architectural unfitness, and the recommended next
+experiments below test that. Each run takes 5–25 minutes on the GTX
+1050.
+
+All four runs together (~1 hour) plus four for binary (~1 hour) give
+a tuned-variant column you can put next to the headline column.
+
+```bash
+# Lower learning rate + more epochs + more patience -- the main fix
+python scripts/run_model.py --model cnn_1d --gpu --task multiclass \
+  --tag tuned_lr5e4_ep150 \
+  --hparam learning_rate=5e-4 --hparam max_epochs=150 \
+  --hparam early_stopping_patience=15
+
+python scripts/run_model.py --model cnn_1d --gpu --task binary \
+  --tag tuned_lr5e4_ep150 \
+  --hparam learning_rate=5e-4 --hparam max_epochs=150 \
+  --hparam early_stopping_patience=15
+
+python scripts/run_model.py --model lstm --gpu --task multiclass \
+  --tag tuned_lr5e4_ep150_bi \
+  --hparam learning_rate=5e-4 --hparam max_epochs=150 \
+  --hparam early_stopping_patience=15 --hparam bidirectional=true
+
+python scripts/run_model.py --model lstm --gpu --task binary \
+  --tag tuned_lr5e4_ep150_bi \
+  --hparam learning_rate=5e-4 --hparam max_epochs=150 \
+  --hparam early_stopping_patience=15 --hparam bidirectional=true
+```
+
+If those still underperform, the next things to try (one at a time,
+each as its own `--tag`) are: a larger CNN (`conv_blocks=3
+filters_per_block=128`), a smaller `batch_size=128` (gradients
+estimated with fewer rare-class samples per batch can be
+counter-productive), a longer LSTM window (`window_size=16`), or
+switching the optimizer (`optimizer=adamw`). Each one gets its own
+tag and folder so you accumulate variants without losing anything.
+
+If the macro-F1 numbers still don't budge after these, the conclusion
+becomes a defensible finding for the write-up: deep architectures
+genuinely under-perform on UNSW-NB15's flow-summary representation.
 
 ---
 

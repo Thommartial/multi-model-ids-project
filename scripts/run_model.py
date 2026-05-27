@@ -37,6 +37,7 @@ import sys
 from pathlib import Path
 
 import pandas as pd
+import yaml
 
 # allow running as a top-level script
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -54,28 +55,47 @@ def _load_fold(name: str) -> pd.DataFrame:
     return pd.read_parquet(PROCESSED / f"{name}.parquet")
 
 
-def _get_factory(name: str, task: str):
+def _parse_hparams(items: list[str]) -> dict:
+    """Parse ``--hparam KEY=VAL`` pairs into a dict with type coercion.
+
+    Uses ``yaml.safe_load`` on the value so common forms work without
+    quoting: ``learning_rate=5e-4`` -> float, ``max_epochs=150`` -> int,
+    ``bidirectional=true`` -> bool, ``optimizer=adam`` -> str.
+    """
+    out: dict = {}
+    for item in items or []:
+        if "=" not in item:
+            raise SystemExit(f"--hparam expects KEY=VAL, got {item!r}")
+        key, raw = item.split("=", 1)
+        out[key.strip()] = yaml.safe_load(raw)
+    return out
+
+
+def _get_factory(name: str, task: str, hparams: dict | None = None):
     """Return the factory function for the requested model.
 
     Imports of the deep-learning module are lazy because they pull in
-    TensorFlow.
+    TensorFlow. ``hparams`` are forwarded to the underlying constructor;
+    sklearn wrappers ignore unknown kwargs would raise -- we filter
+    silently for those (overrides are mainly aimed at the DL models).
     """
+    hp = dict(hparams or {})
     if name == "rule_based":
-        return lambda seed: make_rule_based(seed=seed, max_depth=5)
+        return lambda seed: make_rule_based(seed=seed, max_depth=hp.get("max_depth", 5))
     if name == "random_forest":
-        return lambda seed: get_random_forest(seed=seed)
+        return lambda seed: get_random_forest(seed=seed, **hp)
     if name == "svm":
-        return lambda seed: get_svm(seed=seed)
+        return lambda seed: get_svm(seed=seed, **hp)
     if name == "xgboost":
-        return lambda seed: get_xgboost(seed=seed)
+        return lambda seed: get_xgboost(seed=seed, **hp)
     if name == "cnn_1d":
         from src.models.deep_learning import get_onedcnn
 
-        return lambda seed: get_onedcnn(seed=seed)
+        return lambda seed: get_onedcnn(seed=seed, **hp)
     if name == "lstm":
         from src.models.deep_learning import get_lstm
 
-        return lambda seed: get_lstm(seed=seed)
+        return lambda seed: get_lstm(seed=seed, **hp)
     raise ValueError(f"unknown model: {name!r}")
 
 
@@ -103,8 +123,20 @@ def main() -> None:
         "--gpu", action="store_true",
         help="Configure the GPU (memory growth) before training the DL models.",
     )
+    parser.add_argument(
+        "--tag", default=None,
+        help="Optional subfolder under <save_dir>/<model>/<task>/ so a tuned "
+             "variant does not overwrite the headline run. Free-form string.",
+    )
+    parser.add_argument(
+        "--hparam", action="append", default=[], metavar="KEY=VAL",
+        help="Override a model hyperparameter (repeatable). Examples: "
+             "--hparam learning_rate=5e-4 --hparam max_epochs=150. "
+             "Values are parsed by yaml.safe_load for natural typing.",
+    )
     parser.add_argument("--quiet", action="store_true")
     args = parser.parse_args()
+    hparams = _parse_hparams(args.hparam)
 
     target = "attack_cat" if args.task == "multiclass" else "label"
     print(f"[run_model] model={args.model}  task={args.task}  target={target}")
@@ -127,7 +159,9 @@ def main() -> None:
     y_test = test[target].to_numpy()
     print(f"[run_model] X_train={x_train.shape}  X_val={x_val.shape}  X_test={x_test.shape}")
 
-    factory = _get_factory(args.model, args.task)
+    if hparams:
+        print(f"[run_model] hparam overrides: {hparams}")
+    factory = _get_factory(args.model, args.task, hparams=hparams)
     result = run_model_seeds(
         name=args.model,
         model_factory=factory,
@@ -137,6 +171,7 @@ def main() -> None:
         seeds=args.seeds,
         task=args.task,
         save_dir=args.save_dir,
+        tag=args.tag,
         use_class_weights=not args.no_class_weights,
         verbose=not args.quiet,
     )
@@ -146,7 +181,9 @@ def main() -> None:
     print(f"[run_model] {args.model} / test macro-F1: "
           f"{summary['mean']:.4f} ± {summary['std']:.4f}  "
           f"(95% CI [{summary['ci95_lo']:.4f}, {summary['ci95_hi']:.4f}])")
-    print(f"[run_model] per-seed artefacts saved under {args.save_dir}/{args.model}/{args.task}/")
+    tag_segment = f"/{args.tag}" if args.tag else ""
+    print(f"[run_model] per-seed artefacts saved under "
+          f"{args.save_dir}/{args.model}/{args.task}{tag_segment}/")
 
 
 if __name__ == "__main__":
