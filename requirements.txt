@@ -12,7 +12,7 @@
 
 # --- Core scientific / ML stack ---
 tensorflow[and-cuda]>=2.16,<2.18    # [and-cuda] pulls the GPU runtime libs (CUDA/cuDNN)
-numpy>=1.26
+numpy>=1.26,<2.0    # the TF 2.17.1 wheel is compiled against NumPy 1.x; NumPy 2.x breaks its import (_ARRAY_API not found)
 pandas>=2.1
 scipy>=1.11
 scikit-learn>=1.3
