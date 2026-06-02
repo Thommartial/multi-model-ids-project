@@ -1,27 +1,27 @@
 """Ablation-study framework for the feature-engineering comparison.
 
-Runs the **five-condition** comparison from
-`docs/experimental_protocol.md` §10.1 under the project's statistical
-rigour (§8):
+Runs the five-condition comparison from
+docs/experimental_protocol.md section 10.1 under the project's statistical
+rigour (section 8):
 
-* 5 seeds per condition (the protocol's fixed list ``[42, 43, 44, 45, 46]``).
+* 5 seeds per condition (the protocol's fixed list [42, 43, 44, 45, 46]).
 * Paired Wilcoxon signed-rank test on per-seed macro-F1 across conditions.
-* Holm–Bonferroni correction across the family of pairwise comparisons.
+* Holm-Bonferroni correction across the family of pairwise comparisons.
 * 95% bootstrap CIs on each condition's per-seed metric distribution.
 * Effect-size floor (a delta below 0.005 macro-F1 is not claimed).
 
 The conditions (all sharing a Random Forest downstream classifier so the
 comparison is clean):
 
-1. **Baseline** — all 190 features.
-2. **Filter only** — top-k from the consensus filter
-   (`src/data/feature_selection.py`).
-3. **RFA original** — top-k from the SVM cost-function RFA
-   (`src/data/rfa.py`).
-4. **RFA proposal** — top-k from the RF / val macro-F1 RFA
-   (`src/data/rfa.py`).
-5. **RFA + flow-pair** — best of (3) vs (4) plus flow-pair features
-   (`src/data/bigram_features.py`).
+1. Baseline - all 190 features.
+2. Filter only - top-k from the consensus filter
+   (src/data/feature_selection.py).
+3. RFA original - top-k from the SVM cost-function RFA
+   (src/data/rfa.py).
+4. RFA proposal - top-k from the RF / val macro-F1 RFA
+   (src/data/rfa.py).
+5. RFA + flow-pair - best of (3) vs (4) plus flow-pair features
+   (src/data/bigram_features.py).
 
 This is the headline feature-engineering result of the project. The
 framework here runs the conditions; the caller assembles the feature
@@ -56,18 +56,17 @@ class ConditionResult:
     """Per-condition results across the protocol's seed list.
 
     Attributes
-    ----------
     name
-        Human-readable condition name (e.g. ``"filter_top30"``).
+        Human-readable condition name (e.g. "filter_top30").
     feature_set
         The exact list of feature names used for this condition.
     n_features
-        Convenience -- ``len(feature_set)``.
+        Convenience - len(feature_set).
     per_seed_metrics
-        Indexed by seed; columns include ``val_macro_f1``, ``test_macro_f1``,
-        ``val_balanced_accuracy``, ``test_balanced_accuracy``, and for the
-        binary task additionally ``val_auroc``, ``val_pr_auc``,
-        ``test_auroc``, ``test_pr_auc``.
+        Indexed by seed; columns include val_macro_f1, test_macro_f1,
+        val_balanced_accuracy, test_balanced_accuracy, and for the
+        binary task additionally val_auroc, val_pr_auc,
+        test_auroc, test_pr_auc.
     runtime_seconds
         Wall-clock time for the full 5-seed run of this condition.
     """
@@ -79,7 +78,7 @@ class ConditionResult:
     runtime_seconds: float
 
     def summary(self, metric: str) -> dict[str, float]:
-        """Mean, std, and 95% bootstrap CI for ``metric`` across seeds."""
+        """Mean, std, and 95% bootstrap CI for metric across seeds."""
         values = self.per_seed_metrics[metric].to_numpy()
         ci_lo, ci_hi = bootstrap_ci(values, n_boot=10_000, alpha=0.05, seed=DEFAULT_SEED)
         return {
@@ -136,7 +135,7 @@ def compute_metrics(
     Always returns macro-F1 and balanced accuracy. For binary tasks with
     a predicted probability vector, additionally returns AUROC and PR-AUC
     (PR-AUC is preferred over AUROC under heavy class imbalance, per
-    protocol §6.1).
+    protocol section 6.1).
     """
     metrics: dict[str, float] = {
         "macro_f1": float(f1_score(y_true, y_pred, average="macro", zero_division=0)),
@@ -156,7 +155,7 @@ def bootstrap_ci(
 ) -> tuple[float, float]:
     """Two-sided percentile bootstrap CI on the mean.
 
-    Returns ``(lo, hi)`` for the ``(1 - alpha)`` interval.
+    Returns (lo, hi) for the (1 - alpha) interval.
     """
     values = np.asarray(values, dtype=float)
     if len(values) == 0:
@@ -173,10 +172,10 @@ def bootstrap_ci(
 
 
 def holm_bonferroni(p_values: Iterable[float]) -> np.ndarray:
-    """Holm–Bonferroni-adjusted p-values, in the original order.
+    """Holm-Bonferroni-adjusted p-values, in the original order.
 
     Implementation: sort p-values ascending, multiply the *i*-th sorted
-    value by ``n - i`` (i 0-indexed), enforce a running max for
+    value by n - i (i 0-indexed), enforce a running max for
     monotonicity, then cap at 1.
     """
     p = np.asarray(list(p_values), dtype=float)
@@ -214,11 +213,11 @@ def run_condition(
     rf_kwargs: dict | None = None,
     verbose: bool = False,
 ) -> ConditionResult:
-    """Train Random Forest on ``feature_set`` with each seed, collect metrics.
+    """Train Random Forest on feature_set with each seed, collect metrics.
 
     Default RF hyperparameters are the protocol's safe defaults for the
     *ablation*; the headline model run will use the grid-searched
-    hyperparameters from `configs/hparam_spaces/random_forest.yaml`. The
+    hyperparameters from configs/hparam_spaces/random_forest.yaml. The
     point of the ablation is to *compare* feature sets, so any defensible
     RF that is held fixed across conditions is acceptable here.
     """
@@ -276,12 +275,12 @@ def pairwise_comparisons(
     metric: str = "test_macro_f1",
     effect_size_floor: float = 0.005,
 ) -> pd.DataFrame:
-    """Paired Wilcoxon + Holm–Bonferroni between every pair of conditions.
+    """Paired Wilcoxon + Holm-Bonferroni between every pair of conditions.
 
-    The effect-size floor follows the protocol's §8 rule: a delta below
-    ``effect_size_floor`` (default 0.005) is not claimed as a meaningful
+    The effect-size floor follows the protocol's section 8 rule: a delta below
+    effect_size_floor (default 0.005) is not claimed as a meaningful
     win even if its corrected p-value is significant. The output's
-    ``claim`` column flags pairs that pass both gates.
+    claim column flags pairs that pass both gates.
     """
     rows: list[dict] = []
     names = list(conditions.keys())
@@ -292,7 +291,7 @@ def pairwise_comparisons(
             try:
                 _, p = wilcoxon(va, vb)
             except ValueError:
-                # All differences zero -- wilcoxon raises.
+                # All differences zero - wilcoxon raises.
                 p = np.nan
             rows.append(
                 {
@@ -341,16 +340,15 @@ def run_ablation(
     """Run the multi-condition ablation under the project's protocol.
 
     Parameters
-    ----------
     x_*, y_*
         Train / val / test folds.
     feature_sets
-        ``{condition_name: [feature_name, ...]}``. Each condition is run
+        {condition_name: [feature_name, ...]}. Each condition is run
         independently with the same Random Forest hyperparameters.
     seeds
-        Default ``[42, 43, 44, 45, 46]`` per protocol §8.
+        Default [42, 43, 44, 45, 46] per protocol section 8.
     task
-        ``"multiclass"`` (default) or ``"binary"`` — controls which
+        "multiclass" (default) or "binary" - controls which
         metrics are computed.
     primary_metric
         Column to use for pairwise comparisons and the summary ordering.

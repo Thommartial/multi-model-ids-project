@@ -2,33 +2,31 @@
 
 A single training-and-evaluation loop that every Part-6 model uses, so the
 seeds, the metrics, the confusion matrices, and the on-disk artefact
-layout are identical across model families. This is the protocol §8 +
-§12 surface for the project's six Phase-1 models (rule-based, RF, SVM,
+layout are identical across model families. This is the protocol section 8 +
+section 12 surface for the project's six Phase-1 models (rule-based, RF, SVM,
 XGBoost, 1D-CNN, LSTM).
 
 Convention
-----------
-Each model is exposed as a *factory* function ``seed -> model`` where
-``model`` follows :class:`BaseModel`:
+Each model is exposed as a *factory* function seed -> model where
+model follows BaseModel:
 
-* ``fit(X_train, y_train, X_val=None, y_val=None, class_weights=None)``
-* ``predict(X) -> array``
-* ``predict_proba(X) -> array`` (optional; used for binary AUROC / PR-AUC)
-* ``save(path)`` (optional; falls back to ``joblib.dump``)
+* fit(X_train, y_train, X_val=None, y_val=None, class_weights=None)
+* predict(X) -> array
+* predict_proba(X) -> array (optional; used for binary AUROC / PR-AUC)
+* save(path) (optional; falls back to joblib.dump)
 
 For sklearn-style models the wrapper is a thin shim that ignores
-``X_val``; for Keras models the validation fold flows into early
+X_val; for Keras models the validation fold flows into early
 stopping and best-on-val checkpointing.
 
 Artefacts per (model × seed)
-----------------------------
-Written when ``save_dir`` is set, per protocol §12.2:
+Written when save_dir is set, per protocol section 12.2:
 
-* ``model.joblib`` (or whatever the wrapper's own ``save`` writes)
-* ``predictions_val.parquet`` and ``predictions_test.parquet``
-* ``metrics.json``
-* ``confusion_matrix_val.csv`` and ``confusion_matrix_test.csv``
-* ``metadata.json`` (seed, n_features, runtime, timestamp, task)
+* model.joblib (or whatever the wrapper's own save writes)
+* predictions_val.parquet and predictions_test.parquet
+* metrics.json
+* confusion_matrix_val.csv and confusion_matrix_test.csv
+* metadata.json (seed, n_features, runtime, timestamp, task)
 """
 
 from __future__ import annotations
@@ -79,7 +77,7 @@ class ModelRunResult:
     task: str = "multiclass"
 
     def summary(self, metric: str = "test_macro_f1") -> dict[str, float]:
-        """Mean, std, and 95% bootstrap CI for ``metric`` across seeds."""
+        """Mean, std, and 95% bootstrap CI for metric across seeds."""
         values = self.per_seed_metrics[metric].to_numpy()
         lo, hi = bootstrap_ci(values, n_boot=10_000, alpha=0.05, seed=DEFAULT_SEED)
         return {
@@ -91,7 +89,7 @@ class ModelRunResult:
 
 
 def _balanced_class_weights(y) -> dict:
-    """Inverse-frequency class weights, matching ``imbalance_handling``."""
+    """Inverse-frequency class weights, matching imbalance_handling."""
     from src.data.imbalance_handling import compute_class_weights
 
     return compute_class_weights(y)
@@ -116,7 +114,7 @@ def _save_seed_artefacts(
 ) -> None:
     seed_dir.mkdir(parents=True, exist_ok=True)
 
-    # model -- delegate to wrapper if it knows how to save itself
+    # model - delegate to wrapper if it knows how to save itself
     if hasattr(model, "save") and callable(model.save):
         try:
             model.save(str(seed_dir / "model"))
@@ -171,28 +169,27 @@ def run_model_seeds(
     use_class_weights: bool = True,
     verbose: bool = False,
 ) -> ModelRunResult:
-    """Train one model factory across ``seeds`` and write the per-seed artefacts.
+    """Train one model factory across seeds and write the per-seed artefacts.
 
     Parameters
-    ----------
     name
-        Folder name under ``save_dir`` (e.g. ``"rule_based"``).
+        Folder name under save_dir (e.g. "rule_based").
     model_factory
-        Callable ``(seed) -> unfit model implementing :class:`BaseModel```.
+        Callable (seed) -> unfit model implementing BaseModel.
     x_train, y_train, x_val, y_val, x_test, y_test
-        The three folds. ``y`` may be strings (multiclass) or ints (binary).
+        The three folds. y may be strings (multiclass) or ints (binary).
     seeds
-        Protocol §8 default list ``[42, 43, 44, 45, 46]``.
+        Protocol section 8 default list [42, 43, 44, 45, 46].
     task
-        ``"multiclass"`` or ``"binary"``.
+        "multiclass" or "binary".
     feature_set
-        Subset of columns to train on. ``None`` = all of ``x_train``.
+        Subset of columns to train on. None = all of x_train.
     save_dir
-        Root directory for per-seed artefacts (``reports/runs/`` is the
-        protocol's canonical location). ``None`` = do not save.
+        Root directory for per-seed artefacts (reports/runs/ is the
+        protocol's canonical location). None = do not save.
     use_class_weights
-        Compute inverse-frequency class weights from ``y_train`` and pass
-        to ``model.fit`` via ``class_weights=``.
+        Compute inverse-frequency class weights from y_train and pass
+        to model.fit via class_weights=.
     verbose
         Print a per-seed progress line.
     """
@@ -211,7 +208,7 @@ def run_model_seeds(
     t0 = time.time()
     for seed in seeds:
         model = model_factory(seed)
-        # Per-seed root: includes task (and optional ``tag`` subdir for tuned
+        # Per-seed root: includes task (and optional tag subdir for tuned
         # variants) so a new run never overwrites an existing one.
         # Layout: <save_dir>/<model>/<task>[/<tag>]/seed_<n>/
         if save_dir_path is not None:
@@ -223,7 +220,7 @@ def run_model_seeds(
             seed_root = None
         # If the wrapper supports TensorBoard logging and we have a save_dir,
         # write logs alongside the rest of this seed's artefacts so launching
-        # `tensorboard --logdir reports/runs` shows every model and seed.
+        # tensorboard --logdir reports/runs shows every model and seed.
         if seed_root is not None and hasattr(model, "set_tensorboard_dir"):
             model.set_tensorboard_dir(str(seed_root / "tensorboard"))
         seed_t0 = time.time()
@@ -236,22 +233,28 @@ def run_model_seeds(
         )
         seed_runtime = time.time() - seed_t0
 
+        pred_train = model.predict(x_train[feature_set])
         pred_val = model.predict(x_val[feature_set])
         pred_test = model.predict(x_test[feature_set])
 
-        proba_val, proba_test = None, None
+        proba_train, proba_val, proba_test = None, None, None
         if task == "binary" and hasattr(model, "predict_proba"):
             try:
+                ptr = model.predict_proba(x_train[feature_set])
                 pv = model.predict_proba(x_val[feature_set])
                 pt = model.predict_proba(x_test[feature_set])
                 if pv is not None and pv.ndim == 2 and pv.shape[1] == 2:
+                    proba_train = ptr[:, 1]
                     proba_val = pv[:, 1]
                     proba_test = pt[:, 1]
             except Exception:
                 pass
 
+        # Score train too, so we can report the train-vs-test gap (the
+        # overfitting check for models with no epoch curve).
         row: dict[str, Any] = {"seed": int(seed), "runtime_s": seed_runtime}
         for split_name, y_true, y_pred, y_proba in (
+            ("train", y_train, pred_train, proba_train),
             ("val", y_val, pred_val, proba_val),
             ("test", y_test, pred_test, proba_test),
         ):

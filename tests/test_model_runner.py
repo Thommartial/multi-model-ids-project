@@ -1,4 +1,4 @@
-"""Tests for the shared model harness :mod:`src.evaluation.model_runner`."""
+"""Tests for the shared model harness src.evaluation.model_runner."""
 
 from __future__ import annotations
 

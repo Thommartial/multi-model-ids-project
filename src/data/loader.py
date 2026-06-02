@@ -1,13 +1,12 @@
 """Dataset loading for the Multi-Model IDS project.
 
 Provides clean, integrity-checked access to the UNSW-NB15 partitioned
-benchmark (training + testing CSV files) under ``data/raw/UNSW-NB15/``.
+benchmark (training + testing CSV files) under data/raw/UNSW-NB15/.
 The project later re-splits the pooled records into its own stratified
 70/15/15 train/validation/test sets (Part 4), so this module simply
 loads the raw records and verifies them.
 
 Provenance
-----------
 UNSW-NB15 was created by Moustafa & Slay (2015) at the Australian Centre
 for Cyber Security. Authoritative source:
 https://research.unsw.edu.au/projects/unsw-nb15-dataset
@@ -15,7 +14,7 @@ https://research.unsw.edu.au/projects/unsw-nb15-dataset
 The partitioned benchmark used here has 175,341 training and 82,332
 testing records (257,673 in total), 45 columns, and labels spanning
 normal traffic plus nine attack categories. For automated, reproducible
-fetching, :func:`download_unsw_nb15` pulls the published CSV files from
+fetching, download_unsw_nb15 pulls the published CSV files from
 Hugging Face dataset mirrors.
 """
 
@@ -90,7 +89,7 @@ def verify_checksums(raw_dir: Path = RAW_DIR) -> bool:
 
 
 def load_partition(which: str, raw_dir: Path = RAW_DIR) -> pd.DataFrame:
-    """Load a single partition. ``which`` is 'train' or 'test'."""
+    """Load a single partition. which is 'train' or 'test'."""
     if which not in ("train", "test"):
         raise ValueError("which must be 'train' or 'test'")
     name = TRAIN_FILE if which == "train" else TEST_FILE
@@ -100,9 +99,9 @@ def load_partition(which: str, raw_dir: Path = RAW_DIR) -> pd.DataFrame:
 def load_unsw_nb15(raw_dir: Path = RAW_DIR, combine: bool = True) -> pd.DataFrame:
     """Load the UNSW-NB15 partitioned benchmark.
 
-    With ``combine=True`` (default) the training and testing partitions
+    With combine=True (default) the training and testing partitions
     are pooled into one DataFrame, ready for the project's own stratified
-    70/15/15 split. With ``combine=False`` only the training partition is
+    70/15/15 split. With combine=False only the training partition is
     returned.
     """
     train = load_partition("train", raw_dir)

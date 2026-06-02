@@ -1,16 +1,13 @@
-"""Exploratory Data Analysis for the Multi-Model IDS project.
+"""Exploratory data analysis for the Multi-Model IDS project.
 
-The :class:`EDAnalyzer` runs nine complementary analyses on a network-
-intrusion dataset and writes a comprehensive Markdown report plus
-figures. EDA is the step where we *understand* the data before touching
-a model: how imbalanced the classes are, where data-quality problems
-hide, which features look discriminative, and how separable the attack
-types are. Those findings shape every later decision -- preprocessing,
-feature engineering, sampling, and the choice of evaluation metrics.
+EDAnalyzer runs nine analyses on a network-intrusion dataset and writes a
+Markdown report plus figures: class imbalance, data-quality problems,
+which features look discriminative, and how separable the attack types
+are. The findings feed into preprocessing, feature engineering, sampling,
+and the choice of evaluation metrics.
 
-The analyser is **resumable**: each finished analysis is cached to
-``reports/eda/_findings.json``, so the pipeline can be re-run safely and
-will skip work that is already done.
+The analyser is resumable: each finished analysis is cached to
+reports/eda/_findings.json, so re-running skips work that is already done.
 """
 
 from __future__ import annotations
@@ -96,8 +93,8 @@ class EDAnalyzer:
     ) -> None:
         """Summarise the dataset.
 
-        ``df`` is the deduplicated data the rest of the EDA analyses (and
-        the models) use. ``n_raw`` and ``n_duplicates`` describe the raw
+        df is the deduplicated data the rest of the EDA analyses (and
+        the models) use. n_raw and n_duplicates describe the raw
         dataset before deduplication, so the report records the full
         data-quality picture.
         """

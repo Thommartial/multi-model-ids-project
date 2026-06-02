@@ -1,14 +1,14 @@
 """Project logging and milestone notifications.
 
-Built on ``loguru``. :func:`configure_logging` sets up a clean console
-log plus a rotating file log under ``experiments/logs/``.
-:func:`notify` records a milestone (the start or finish of a long
+Built on loguru. configure_logging sets up a clean console
+log plus a rotating file log under experiments/logs/.
+notify records a milestone (the start or finish of a long
 experiment) so progress is visible both live and in the log file.
 
-Email/Slack notifications are intentionally not wired up here -- they
+Email/Slack notifications are intentionally not wired up here - they
 need credentials and add fragility. If they are wanted later, send them
-from :func:`notify` using values read from environment variables (see
-``.env.example``).
+from notify using values read from environment variables (see
+.env.example).
 """
 
 from __future__ import annotations

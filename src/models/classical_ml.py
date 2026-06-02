@@ -1,23 +1,12 @@
-"""Classical ML models for Phase 1 (WBS Part 6.2).
+"""Classical ML model wrappers for Phase 1 (BaseModel protocol).
 
-Three model families, each wrapped to fit the :class:`BaseModel`
-protocol from :mod:`src.evaluation.model_runner` so they slot into the
-shared harness without ceremony:
+RandomForestModel: sklearn RF, class-weighted, unscaled inputs.
+SVMModel: sklearn SVC (RBF), class-weighted, stratified subsample plus an
+internal StandardScaler fitted on the subsample.
+XGBoostModel: XGBClassifier with sample weights from the class weights.
 
-* :class:`RandomForestModel` -- sklearn RF, class-weighted, unscaled
-  inputs (tree splits are scale-invariant -- protocol §3).
-* :class:`SVMModel` -- sklearn SVC (RBF kernel), class-weighted, with
-  the protocol §9 stratified subsample (capped at 30,000 rows) and an
-  internal :class:`StandardScaler` fitted on the subsample only.
-* :class:`XGBoostModel` -- xgboost ``XGBClassifier``, with sample
-  weights derived from the inverse-frequency class weights
-  (multiclass) or ``scale_pos_weight`` (binary).
-
-Hyperparameter spaces are loaded from
-``configs/hparam_spaces/<model>.yaml`` (per WBS 2.2.4). Grid search is
-provided by :func:`optimize_hyperparameters` and uses sklearn's
-``GridSearchCV`` -- Optuna for the larger spaces (XGBoost, NNs) lives in
-the dedicated ``src/optimization`` module.
+Hyperparameter spaces load from configs/hparam_spaces/<model>.yaml.
+optimize_hyperparameters runs GridSearchCV; Optuna lives in src/optimization.
 """
 
 from __future__ import annotations
@@ -48,13 +37,8 @@ from src.utils.reproducibility import DEFAULT_SEED
 CONFIGS_DIR = Path("configs/hparam_spaces")
 
 
-# ---------------------------------------------------------------------------
-# Hyperparameter space loading
-# ---------------------------------------------------------------------------
-
-
 def load_hparam_space(name: str) -> dict:
-    """Load ``configs/hparam_spaces/<name>.yaml`` and return as a dict."""
+    """Load configs/hparam_spaces/<name>.yaml as a dict."""
     path = CONFIGS_DIR / f"{name}.yaml"
     if not path.exists():
         raise FileNotFoundError(f"hyperparameter spec not found: {path}")
@@ -62,13 +46,8 @@ def load_hparam_space(name: str) -> dict:
         return yaml.safe_load(fh) or {}
 
 
-# ---------------------------------------------------------------------------
-# Random Forest
-# ---------------------------------------------------------------------------
-
-
 class RandomForestModel:
-    """Random Forest wrapper following the :class:`BaseModel` protocol."""
+    """Random Forest wrapper (BaseModel protocol)."""
 
     def __init__(
         self,
@@ -134,19 +113,13 @@ def get_random_forest(seed: int = DEFAULT_SEED, **hparams) -> RandomForestModel:
     return RandomForestModel(seed=seed, **hparams)
 
 
-# ---------------------------------------------------------------------------
-# SVM (RBF kernel) -- with protocol §9 subsample and internal scaler
-# ---------------------------------------------------------------------------
-
-
 class SVMModel:
-    """SVC (RBF kernel) wrapper with protocol §9 tractability handling.
+    """SVC (RBF kernel) wrapper.
 
-    On a train fold larger than ``subsample`` rows, takes a stratified
-    sub-sample (default 30,000) before training. Validation and test are
-    **never** subsampled. Features are internally standardised with a
-    :class:`StandardScaler` fitted on the subsample only (RBF distance
-    is scale-sensitive); the same scaler is applied to predict inputs.
+    Train folds larger than subsample rows (default 30,000) are stratified
+    down before fitting; validation and test are never subsampled. Features
+    are standardised with a StandardScaler fitted on the subsample only (RBF
+    distance is scale-sensitive) and the same scaler is applied at predict.
     """
 
     def __init__(
@@ -235,9 +208,7 @@ def get_svm(seed: int = DEFAULT_SEED, **hparams) -> SVMModel:
 
 
 class XGBoostModel:
-    """XGBoost wrapper with class-weighted sample weights and
-    native handling of imbalance / missing values.
-    """
+    """XGBoost wrapper with class-weighted sample weights."""
 
     def __init__(
         self,
@@ -274,7 +245,7 @@ class XGBoostModel:
         self._label_encoder: dict | None = None
 
     def _encode(self, y):
-        """Map y to integer ids -- xgboost wants 0..K-1 for multiclass."""
+        """Map y to integer ids; xgboost wants 0..K-1 for multiclass."""
         y_arr = np.asarray(y)
         if self._label_encoder is None:
             classes = sorted(set(y_arr.tolist()))
@@ -342,12 +313,12 @@ def get_xgboost(seed: int = DEFAULT_SEED, **hparams) -> XGBoostModel:
 
 
 # ---------------------------------------------------------------------------
-# Universal save / load (WBS 6.2.4)
+# Universal save / load
 # ---------------------------------------------------------------------------
 
 
 def save_model(model, path: str | Path) -> None:
-    """Save any BaseModel wrapper -- delegates to its ``save`` or to joblib."""
+    """Save any BaseModel wrapper; delegates to its save or to joblib."""
     if hasattr(model, "save"):
         model.save(path)
     else:
@@ -355,7 +326,7 @@ def save_model(model, path: str | Path) -> None:
 
 
 def load_model(path: str | Path):
-    """Load a wrapper saved with :func:`save_model`."""
+    """Load a wrapper saved with save_model."""
     return joblib.load(Path(path))
 
 
@@ -367,8 +338,8 @@ def load_model(path: str | Path):
 def _grid_from_yaml_space(space: dict) -> dict[str, list]:
     """Coerce a YAML hyperparameter space into a sklearn-style grid.
 
-    A YAML entry that is a plain list (``[a, b, c]``) is used as-is.
-    Entries that are dicts with ``type``/``choices``/``low``/``high`` are
+    A YAML entry that is a plain list ([a, b, c]) is used as-is.
+    Entries that are dicts with type/choices/low/high are
     not appropriate for grid search and are ignored here (they are
     intended for Optuna in the optimization module).
     """
@@ -392,11 +363,11 @@ def optimize_hyperparameters(
     n_jobs: int = -1,
     verbose: int = 0,
 ):
-    """Grid-search the sklearn ``estimator`` over ``space``.
+    """Grid-search the sklearn estimator over space.
 
-    Returns the fitted :class:`GridSearchCV` -- the caller can read
-    ``best_estimator_``, ``best_params_``, and ``cv_results_``. Suitable
-    for the Random Forest and SVM families (WBS 6.2.4 / protocol §9).
+    Returns the fitted GridSearchCV - the caller can read
+    best_estimator_, best_params_, and cv_results_. Suitable
+    for the Random Forest and SVM families (WBS 6.2.4 / protocol section 9).
     """
     grid = _grid_from_yaml_space(space)
     if not grid:
@@ -430,7 +401,7 @@ def train_with_cv(
 ):
     """Convenience: build an unfit estimator + grid-search.
 
-    If ``space`` is None or list-empty, the estimator is fitted with its
+    If space is None or list-empty, the estimator is fitted with its
     defaults and returned as-is. Otherwise grid search is run and the
     refit best estimator is returned.
     """

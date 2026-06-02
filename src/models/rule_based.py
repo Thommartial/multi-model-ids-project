@@ -1,25 +1,25 @@
-"""Rule-based IDS baseline (WBS Part 6.1; protocol §6.1 row).
+"""Rule-based IDS baseline (WBS Part 6.1; protocol section 6.1 row).
 
-A **shallow decision tree** *is* a rule-based classifier: every leaf is a
+A shallow decision tree *is* a rule-based classifier: every leaf is a
 conjunction of feature-threshold rules of the form
-``feature_a <= t_a AND feature_b > t_b AND ...``. The tree at the
-project's default depth of 5 yields at most 32 leaves -- a compact,
+feature_a <= t_a AND feature_b > t_b AND .... The tree at the
+project's default depth of 5 yields at most 32 leaves - a compact,
 interpretable rule set the supervisor and a reader can audit
 directly.
 
 Why this is the project's "rule-based" baseline:
 
-* It is **interpretable** -- ``get_rules()`` returns each leaf as a
+* It is interpretable - get_rules() returns each leaf as a
   human-readable conjunction with its predicted class.
-* It is **defensible** -- decision-tree leaves are the canonical
+* It is defensible - decision-tree leaves are the canonical
   representation of rule-based classifiers in the IDS literature.
-* It is **fair to compare** -- it learns thresholds from the training
+* It is fair to compare - it learns thresholds from the training
   fold the same way every other Phase-1 model does, so it slots into
   the protocol's evaluation harness without ceremony.
 
 Optional hand-crafted thresholds (e.g. specific to one of the 9
 UNSW-NB15 attack types) can be layered on top by extending
-:class:`RuleBasedIDS.predict` -- this is left for the refinement pass
+RuleBasedIDS.predict - this is left for the refinement pass
 after the headline run is in.
 """
 
@@ -38,16 +38,15 @@ class RuleBasedIDS:
     """Sklearn-compatible rule-based IDS wrapper around a shallow tree.
 
     Parameters
-    ----------
     max_depth
-        Tree depth. Default 5 (≤ 32 leaves -- still inspectable).
+        Tree depth. Default 5 (≤ 32 leaves - still inspectable).
     min_samples_leaf
         Minimum samples per leaf, in *fraction* of training set if a
         float, in absolute counts if int. Default 0.001 = 0.1% of train.
     seed
         Random seed forwarded to the underlying tree.
     class_weight
-        ``"balanced"`` (default) handles UNSW-NB15's class imbalance.
+        "balanced" (default) handles UNSW-NB15's class imbalance.
     """
 
     def __init__(
@@ -138,9 +137,9 @@ class RuleBasedIDS:
 
 
 def make_rule_based(seed: int = 42, **hparams) -> RuleBasedIDS:
-    """Factory that returns an unfit :class:`RuleBasedIDS` instance.
+    """Factory that returns an unfit RuleBasedIDS instance.
 
-    Used by :func:`src.evaluation.model_runner.run_model_seeds` -- one
-    instance per seed for the multi-seed protocol §8 evaluation.
+    Used by src.evaluation.model_runner.run_model_seeds - one
+    instance per seed for the multi-seed protocol section 8 evaluation.
     """
     return RuleBasedIDS(seed=seed, **hparams)

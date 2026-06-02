@@ -1,4 +1,4 @@
-"""Unit tests for :mod:`src.models.rule_based`."""
+"""Unit tests for src.models.rule_based."""
 
 from __future__ import annotations
 

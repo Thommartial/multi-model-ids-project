@@ -1,4 +1,4 @@
-"""Unit tests for :mod:`src.models.classical_ml`."""
+"""Unit tests for src.models.classical_ml."""
 
 from __future__ import annotations
 

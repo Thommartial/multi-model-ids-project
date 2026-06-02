@@ -1,29 +1,27 @@
 """Filter-based feature selection for the Multi-Model IDS project.
 
-Implements the proposal's §5.1 "filter" condition: a **consensus** of two
+Implements the proposal's section 5.1 "filter" condition: a consensus of two
 complementary feature-ranking methods.
 
-* :func:`extra_trees_selection` -- impurity-based importance from an
+* extra_trees_selection - impurity-based importance from an
   Extra-Trees ensemble. Captures non-linear, interaction-driven signal.
-* :func:`mutual_information_selection` -- mutual information between each
+* mutual_information_selection - mutual information between each
   feature and the label. Captures distributional dependence; non-parametric.
-* :func:`consensus_selection` -- fuses the two rankings (average-rank
+* consensus_selection - fuses the two rankings (average-rank
   aggregation by default) so features both methods agree on rise to the top.
   Also supports an "intersection" mode (features in the top-k of both).
 
-Leakage rule (experimental_protocol.md §3, §10)
------------------------------------------------
-The filter is fitted on the **training fold only**. The output is a ranking
+Leakage rule (experimental_protocol.md section 3, section 10)
+The filter is fitted on the training fold only. The output is a ranking
 of feature names; the same ranking is then used to subset validation and
 test. Neither method ever sees val or test rows.
 
 Notes
------
-- Extra-Trees uses ``class_weight="balanced"`` for fairness on the heavily
+- Extra-Trees uses class_weight="balanced" for fairness on the heavily
   imbalanced multiclass target.
-- ``mutual_info_classif`` is non-parametric (k-NN estimator) and runtime
+- mutual_info_classif is non-parametric (k-NN estimator) and runtime
   scales poorly with row count; on the ~114k-row training pool the default
-  is to stratify-subsample to 30,000 rows for MI. Set ``sample_size=None``
+  is to stratify-subsample to 30,000 rows for MI. Set sample_size=None
   to use the full pool.
 """
 
@@ -42,17 +40,16 @@ from src.utils.reproducibility import DEFAULT_SEED
 
 @dataclass
 class FilterResult:
-    """Output of :func:`consensus_selection`.
+    """Output of consensus_selection.
 
     Attributes
-    ----------
     ranking
-        One row per input feature. Columns: ``feature``, ``et_importance``,
-        ``et_rank``, ``mi_score``, ``mi_rank``, ``consensus_rank``. Sorted by
-        ``consensus_rank`` ascending (best feature first).
+        One row per input feature. Columns: feature, et_importance,
+        et_rank, mi_score, mi_rank, consensus_rank. Sorted by
+        consensus_rank ascending (best feature first).
     selected
-        Feature names selected -- top-k by consensus, or the intersection
-        of the two top-k lists, depending on ``mode``.
+        Feature names selected - top-k by consensus, or the intersection
+        of the two top-k lists, depending on mode.
     mode
         Fusion mode used ("rank_mean" or "intersection").
     target
@@ -84,7 +81,7 @@ def extra_trees_selection(
 
     Higher is more important. Fitted on the training set only.
 
-    Returns a ``pd.Series`` indexed by feature name, *not* sorted -- sort the
+    Returns a pd.Series indexed by feature name, *not* sorted - sort the
     caller's way if a ranking is needed.
     """
     et = ExtraTreesClassifier(
@@ -108,12 +105,12 @@ def mutual_information_selection(
 
     Higher is more informative. Fitted on the training set only.
 
-    ``sample_size`` -- the MI estimator is O(n) per feature but with a
+    sample_size - the MI estimator is O(n) per feature but with a
     large k-NN constant, so on the ~114k-row training pool the default
-    sub-samples to 30,000 rows (stratified on ``y``) to keep runtime sensible.
-    Set ``sample_size=None`` to use the full pool.
+    sub-samples to 30,000 rows (stratified on y) to keep runtime sensible.
+    Set sample_size=None to use the full pool.
 
-    Returns a ``pd.Series`` indexed by feature name, *not* sorted.
+    Returns a pd.Series indexed by feature name, *not* sorted.
     """
     x_eff, y_eff = x, y
     if sample_size is not None and len(x) > sample_size:
@@ -147,16 +144,15 @@ def consensus_selection(
     """Rank features by consensus of Extra-Trees importance and mutual information.
 
     Parameters
-    ----------
     x, y
-        Training-set features and labels (typically multiclass ``attack_cat``).
+        Training-set features and labels (typically multiclass attack_cat).
     k
-        How many top features to select. ``None`` keeps every feature; only a
+        How many top features to select. None keeps every feature; only a
         ranking is produced.
     mode
-        ``"rank_mean"`` (default) -- average of the two per-method ranks; the
+        "rank_mean" (default) - average of the two per-method ranks; the
         top-k features by the resulting consensus rank are selected.
-        ``"intersection"`` -- a feature is selected only if it sits in the
+        "intersection" - a feature is selected only if it sits in the
         top-k of *both* methods.
     target_name
         A label for the target, recorded on the result so saved artefacts can

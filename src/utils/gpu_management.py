@@ -5,19 +5,18 @@ tight memory budget, so these helpers:
 
 * stop TensorFlow from grabbing all GPU memory at once (memory growth);
 * optionally enforce a hard memory ceiling;
-* offer mixed-precision training -- with the caveat below.
+* offer mixed-precision training - with the caveat below.
 
 Gradient checkpointing (trading extra compute for lower memory) is a
 per-model technique; it is applied when the deep networks are built in
 Parts 6-7, not here.
 
 Mixed precision on Pascal
--------------------------
 Mixed-precision (float16) training gives large speed-ups only on GPUs
 with Tensor Cores (Volta generation and newer). The GTX 1050 is Pascal
-and has **no** Tensor Cores, so float16 may give little or no speed-up
+and has no Tensor Cores, so float16 may give little or no speed-up
 and can even be slower because of the extra cast operations. Always
-measure with :func:`benchmark_mixed_precision` before enabling it for
+measure with benchmark_mixed_precision before enabling it for
 real runs (Task 1.4.2.1).
 """
 

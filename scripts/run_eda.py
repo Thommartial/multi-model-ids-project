@@ -5,8 +5,8 @@ Usage:
     python scripts/run_eda.py
 
 Outputs:
-    reports/eda/figures/*.png      -- analysis figures
-    reports/eda/eda_report_*.md    -- the comprehensive Markdown report
+    reports/eda/figures/*.png      - analysis figures
+    reports/eda/eda_report_*.md    - the comprehensive Markdown report
 """
 
 from __future__ import annotations
@@ -33,7 +33,7 @@ def main() -> None:
     validate_dataset(raw, "pooled UNSW-NB15 (raw)")
 
     # Deduplicate first, so the EDA describes exactly the data the models
-    # use -- the preprocessing pipeline removes these same duplicates.
+    # use - the preprocessing pipeline removes these same duplicates.
     n_raw = len(raw)
     df = Preprocessor().clean(raw)
     n_duplicates = n_raw - len(df)

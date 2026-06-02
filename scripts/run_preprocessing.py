@@ -5,9 +5,9 @@ Usage:
     python scripts/run_preprocessing.py
 
 Produces, under data/processed/:
-    train.parquet, val.parquet, test.parquet  -- encoded, unscaled splits,
-        each carrying the `label` and `attack_cat` target columns
-    preprocessor.joblib                       -- the fitted Preprocessor
+    train.parquet, val.parquet, test.parquet  - encoded, unscaled splits,
+        each carrying the label and attack_cat target columns
+    preprocessor.joblib                       - the fitted Preprocessor
         (one-hot encoder, z-score scaler, imputation medians)
 """
 

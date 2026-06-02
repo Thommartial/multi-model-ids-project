@@ -1,6 +1,6 @@
-"""One-shot migration: ``reports/runs/<model>/seed_*/`` → ``reports/runs/<model>/<task>/seed_*/``.
+"""One-shot migration: reports/runs/<model>/seed_*/ → reports/runs/<model>/<task>/seed_*/.
 
-Reads each seed folder's ``metadata.json`` for its ``task`` value and moves
+Reads each seed folder's metadata.json for its task value and moves
 the folder into the new task-aware layout.  Idempotent (skips folders
 already in the new layout).
 """

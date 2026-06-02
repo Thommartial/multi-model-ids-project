@@ -1,4 +1,4 @@
-"""Unit tests for :mod:`src.data.feature_selection`."""
+"""Unit tests for src.data.feature_selection."""
 
 from __future__ import annotations
 

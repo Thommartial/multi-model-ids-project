@@ -5,23 +5,21 @@ features under a fixed Random Forest, with the protocol's statistical
 rigour (5 seeds, paired Wilcoxon, Holm--Bonferroni, 95% bootstrap CIs).
 
 Dependencies on prior steps
----------------------------
-* Filter ranking JSON (Part 5.1) -- produced by ``run_filter_selection.py``.
-* RFA rankings (Part 5.2) -- produced by ``run_rfa.py``; if absent, the
+* Filter ranking JSON (Part 5.1) - produced by run_filter_selection.py.
+* RFA rankings (Part 5.2) - produced by run_rfa.py; if absent, the
   corresponding ablation conditions are skipped and a warning is printed.
-* Flow-pair features (Part 5.3) -- computed on the fly here from the
+* Flow-pair features (Part 5.3) - computed on the fly here from the
   numeric columns of the processed parquets.
 
-Outputs go under ``reports/ablation/``:
+Outputs go under reports/ablation/:
 
-* ``ablation_per_seed.csv`` -- one row per (condition, seed) with all metrics.
-* ``ablation_summary.csv`` -- one row per condition with mean ± std + 95% CI.
-* ``ablation_comparisons.csv`` -- pairwise Wilcoxon + Holm--Bonferroni.
-* ``ablation_summary.md`` -- short human-readable summary.
+* ablation_per_seed.csv - one row per (condition, seed) with all metrics.
+* ablation_summary.csv - one row per condition with mean ± std + 95% CI.
+* ablation_comparisons.csv - pairwise Wilcoxon + Holm--Bonferroni.
+* ablation_summary.md - short human-readable summary.
 
 Usage
------
-::
+:
 
     python scripts/run_ablation.py                 # multiclass, all available conditions
     python scripts/run_ablation.py --task binary   # binary task (uses label)
@@ -53,7 +51,7 @@ def _load_fold(name: str) -> pd.DataFrame:
 
 
 def _df_to_markdown(df: pd.DataFrame, float_fmt: str = "{:.4f}") -> str:
-    """Plain-markdown table renderer that does not depend on ``tabulate``."""
+    """Plain-markdown table renderer that does not depend on tabulate."""
     cols = [str(c) for c in df.columns]
     lines = ["| " + " | ".join(cols) + " |",
              "|" + "|".join(["---"] * len(cols)) + "|"]
@@ -166,16 +164,16 @@ def main() -> None:
     # ---- assemble the feature sets per condition --------------------------
     feature_sets: dict[str, list[str]] = {}
 
-    # 1. baseline -- all features
+    # 1. baseline - all features
     feature_sets["baseline_all_features"] = all_features
 
-    # 2. filter -- top-k consensus
+    # 2. filter - top-k consensus
     filter_target = "attack_cat"  # filter ranking is multiclass
     filter_sel = _try_load_filter_selected(filter_target, top_k=args.filter_top_k)
     if filter_sel is not None:
         feature_sets[f"filter_top{args.filter_top_k}"] = filter_sel
 
-    # 3. RFA original (SVM cost function) -- always against the binary label
+    # 3. RFA original (SVM cost function) - always against the binary label
     rfa_svm_sel = _try_load_rfa_selected("svm_cost_function_label")
     if rfa_svm_sel is not None:
         feature_sets["rfa_svm_original"] = rfa_svm_sel

@@ -2,13 +2,12 @@
 
 Loads the train fold, runs the consensus filter (Extra-Trees importance +
 mutual information), and writes the full ranking and top-k selection to
-``reports/feature_selection/``.
+reports/feature_selection/.
 
-Default target is multiclass ``attack_cat`` (Section 5 of the experimental
-protocol); pass ``--target label`` for the binary task.
+Default target is multiclass attack_cat (Section 5 of the experimental
+protocol); pass --target label for the binary task.
 
 Usage
------
     python scripts/run_filter_selection.py [--top-k N] [--mode rank_mean|intersection]
                                            [--target label|attack_cat]
                                            [--mi-sample N]

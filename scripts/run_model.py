@@ -1,29 +1,28 @@
 """Universal runner for Phase-1 models (Part 6).
 
 Trains one model family across the protocol's seed list, computes
-val + test metrics, and writes the §12.2 artefacts under
-``reports/runs/<model>/seed_<n>/``.
+val + test metrics, and writes the section 12.2 artefacts under
+reports/runs/<model>/seed_<n>/.
 
 The same command shape works for every model. Pick the model with
-``--model``; pick the task with ``--task``.
+--model; pick the task with --task.
 
 Examples
---------
-::
+:
 
-    # Interpretable rule-based baseline -- fastest model, fastest result.
+    # Interpretable rule-based baseline - fastest model, fastest result.
     python scripts/run_model.py --model rule_based
 
     # Random Forest, multiclass.
     python scripts/run_model.py --model random_forest
 
-    # SVM (uses the protocol §9 30k subsample internally).
+    # SVM (uses the protocol section 9 30k subsample internally).
     python scripts/run_model.py --model svm
 
     # XGBoost on the binary task.
     python scripts/run_model.py --model xgboost --task binary
 
-    # 1-D CNN -- needs a GPU to be reasonable; works on CPU but slow.
+    # 1-D CNN - needs a GPU to be reasonable; works on CPU but slow.
     python scripts/run_model.py --model cnn_1d
 
     # LSTM (uses an internal sliding window of length 8 by default).
@@ -56,11 +55,11 @@ def _load_fold(name: str) -> pd.DataFrame:
 
 
 def _parse_hparams(items: list[str]) -> dict:
-    """Parse ``--hparam KEY=VAL`` pairs into a dict with type coercion.
+    """Parse --hparam KEY=VAL pairs into a dict with type coercion.
 
-    Uses ``yaml.safe_load`` on the value so common forms work without
-    quoting: ``learning_rate=5e-4`` -> float, ``max_epochs=150`` -> int,
-    ``bidirectional=true`` -> bool, ``optimizer=adam`` -> str.
+    Uses yaml.safe_load on the value so common forms work without
+    quoting: learning_rate=5e-4 -> float, max_epochs=150 -> int,
+    bidirectional=true -> bool, optimizer=adam -> str.
     """
     out: dict = {}
     for item in items or []:
@@ -75,8 +74,8 @@ def _get_factory(name: str, task: str, hparams: dict | None = None):
     """Return the factory function for the requested model.
 
     Imports of the deep-learning module are lazy because they pull in
-    TensorFlow. ``hparams`` are forwarded to the underlying constructor;
-    sklearn wrappers ignore unknown kwargs would raise -- we filter
+    TensorFlow. hparams are forwarded to the underlying constructor;
+    sklearn wrappers ignore unknown kwargs would raise - we filter
     silently for those (overrides are mainly aimed at the DL models).
     """
     hp = dict(hparams or {})

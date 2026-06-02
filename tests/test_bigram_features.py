@@ -1,4 +1,4 @@
-"""Unit tests for :mod:`src.data.bigram_features`."""
+"""Unit tests for src.data.bigram_features."""
 
 from __future__ import annotations
 

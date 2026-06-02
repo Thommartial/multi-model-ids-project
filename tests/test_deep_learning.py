@@ -1,4 +1,4 @@
-"""Smoke tests for :mod:`src.models.deep_learning`.
+"""Smoke tests for src.models.deep_learning.
 
 These tests train tiny models for very few epochs to verify the
 fit/predict/save/load contract. They are still slow relative to the
@@ -31,7 +31,7 @@ def _toy_two_class(n: int = 200, n_features: int = 8, seed: int = 0):
     return pd.DataFrame(x, columns=[f"f{i}" for i in range(n_features)]), y
 
 
-# -- 1-D CNN ---------------------------------------------------------------
+# - 1-D CNN ---------------------------------------------------------------
 
 
 def test_onedcnn_fit_predict_returns_one_per_row() -> None:
@@ -72,7 +72,7 @@ def test_onedcnn_save_load_roundtrip(tmp_path: Path) -> None:
     assert np.array_equal(pred_before, pred_after)
 
 
-# -- LSTM ------------------------------------------------------------------
+# - LSTM ------------------------------------------------------------------
 
 
 def test_lstm_fit_predict_pads_to_input_length() -> None:

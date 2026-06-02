@@ -3,47 +3,44 @@
 Two complementary variants. Both produce a forward-selection ranking of the
 input features, starting from an empty set and adding one feature per
 iteration; they are compared head-to-head in Part 5.4
-(`experimental_protocol.md` §10.1 conditions 3 and 4). The two-variant
+(experimental_protocol.md section 10.1 conditions 3 and 4). The two-variant
 comparison was the supervisor decision recorded on 2026-05-22
-(`docs/rfa_bigram_spec.md` §7).
+(docs/rfa_bigram_spec.md section 7).
 
-* :func:`rfa_random_forest` -- the **proposal's variant**. At each step,
+* rfa_random_forest - the proposal's variant. At each step,
   adds the feature whose inclusion gives the largest gain in validation
   macro-F1 of a shallow Random Forest. Stops on patience-based early
-  termination. Multiclass target (``attack_cat``). Cited as
+  termination. Multiclass target (attack_cat). Cited as
   *"RFA-style forward selection, in the spirit of Hamed, Dara & Kremer
-  (2018)"* -- not as their exact algorithm.
+  (2018)"* - not as their exact algorithm.
 
-* :func:`rfa_svm_cost_function` -- the **original** algorithm (Hamed, Dara
+* rfa_svm_cost_function - the original algorithm (Hamed, Dara
   & Kremer 2018; thesis Algorithm 2; Eq. 3.10). At each step, adds the
   feature whose inclusion produces the largest decrease in the SVM dual
-  objective ``½αᵀHα``. The SVM is trained once per *added* feature, and
-  candidate features are scored against the current ``α`` without
+  objective ½αᵀHα. The SVM is trained once per *added* feature, and
+  candidate features are scored against the current α without
   retraining (Guyon-Weston-style cost-function approximation). Binary
   target (the original is binary).
 
-Leakage rule (experimental_protocol.md §3)
-------------------------------------------
+Leakage rule (experimental_protocol.md section 3)
 RFA is fitted on the training fold. The RF variant additionally consults
 the validation fold for its F1 score; that is by design (the protocol's
 hyperparameter-selection budget) and uses no test data.
 
 Tractability
-------------
-The SVM RFA is heavy: per protocol §9 the SVM uses a stratified subsample.
+The SVM RFA is heavy: per protocol section 9 the SVM uses a stratified subsample.
 For RFA specifically the subsample is set smaller (default 5,000) because
 the kernel matrix on the support vectors is *O(N²)* and is recomputed
 once per added feature.
 
 Initialisation
---------------
-Algorithm 2 in the thesis is written as a ``while |S| < N`` loop and does
-not specify how to score features when ``S`` is empty (there is no SVM yet
-to compute ``α`` against). For the empty-set case, the SVM RFA here picks
-the first feature by mutual information with the label -- a fast,
+Algorithm 2 in the thesis is written as a while |S| < N loop and does
+not specify how to score features when S is empty (there is no SVM yet
+to compute α against). For the empty-set case, the SVM RFA here picks
+the first feature by mutual information with the label - a fast,
 deterministic, defensible initialisation. The cost-function machinery
-proper begins from ``k = 1``. This deviation is documented in the
-selection path (``init_mi`` column).
+proper begins from k = 1. This deviation is documented in the
+selection path (init_mi column).
 """
 
 from __future__ import annotations
@@ -70,21 +67,20 @@ class RFAResult:
     """Output of an RFA run.
 
     Attributes
-    ----------
     method
-        Name of the RFA variant: ``"rf_macro_f1"`` or
-        ``"svm_cost_function"``.
+        Name of the RFA variant: "rf_macro_f1" or
+        "svm_cost_function".
     selected
         Feature names in the order they were added (best first).
     selection_path
-        One row per iteration. Columns include ``k`` and ``feature_added``;
-        method-specific columns are ``val_macro_f1``/``improvement`` (RF) or
-        ``dj``/``init_mi`` (SVM).
+        One row per iteration. Columns include k and feature_added;
+        method-specific columns are val_macro_f1/improvement (RF) or
+        dj/init_mi (SVM).
     ranking
-        Two columns: ``feature`` and ``rfa_rank`` (1 = best, NaN for
+        Two columns: feature and rfa_rank (1 = best, NaN for
         features not added if a stopping rule fired before they were).
     hyperparams
-        The hyperparameters used by the run -- saved alongside the result so
+        The hyperparameters used by the run - saved alongside the result so
         the run is self-describing.
     runtime_seconds
         Wall-clock time of the call, in seconds.
@@ -109,7 +105,7 @@ class RFAResult:
 
 
 def _build_ranking(selected: list[str], all_features: list[str]) -> pd.DataFrame:
-    """Build the per-feature ranking DataFrame from an ordered ``selected`` list."""
+    """Build the per-feature ranking DataFrame from an ordered selected list."""
     rank_map = {f: i + 1 for i, f in enumerate(selected)}
     rows = [{"feature": f, "rfa_rank": rank_map.get(f, np.nan)} for f in all_features]
     out = pd.DataFrame(rows)
@@ -117,7 +113,7 @@ def _build_ranking(selected: list[str], all_features: list[str]) -> pd.DataFrame
 
 
 # ---------------------------------------------------------------------------
-# Variant 1 -- the proposal's RF / val-macro-F1 forward selection
+# Variant 1 - the proposal's RF / val-macro-F1 forward selection
 # ---------------------------------------------------------------------------
 
 
@@ -141,30 +137,29 @@ def rfa_random_forest(
 
     At each step, adds the feature whose inclusion gives the largest gain in
     val macro-F1 of a shallow Random Forest trained on the current feature
-    subset. Stops when the gains over the last ``patience`` additions are all
-    below ``improvement_threshold``, or when ``max_features`` is reached.
+    subset. Stops when the gains over the last patience additions are all
+    below improvement_threshold, or when max_features is reached.
 
     Parameters
-    ----------
     x_train, y_train
-        Training fold (multiclass target ``attack_cat`` recommended).
+        Training fold (multiclass target attack_cat recommended).
     x_val, y_val
         Validation fold for scoring.
     max_features
-        Hard cap on the number of features to add. ``None`` -> all features.
+        Hard cap on the number of features to add. None -> all features.
     patience
-        Stop if every gain in the most recent ``patience`` iterations is
-        below ``improvement_threshold``.
+        Stop if every gain in the most recent patience iterations is
+        below improvement_threshold.
     improvement_threshold
         The "no meaningful improvement" floor for the patience rule
-        (default 0.001, per `experimental_protocol.md` §10.2).
+        (default 0.001, per experimental_protocol.md section 10.2).
     n_estimators, max_depth
         Random-Forest hyperparameters; defaults are "shallow" per the
         proposal.
     candidate_pool
         Restrict the candidate features to this subset (preserves caller
-        order). Useful for staged or warm-started runs. ``None`` = all
-        columns of ``x_train``.
+        order). Useful for staged or warm-started runs. None = all
+        columns of x_train.
     """
     t0 = time.time()
     all_features = list(x_train.columns)
@@ -255,14 +250,14 @@ def rfa_random_forest(
 
 
 # ---------------------------------------------------------------------------
-# Variant 2 -- the original SVM cost-function RFA (Hamed et al. 2018)
+# Variant 2 - the original SVM cost-function RFA (Hamed et al. 2018)
 # ---------------------------------------------------------------------------
 
 
 def _compute_scale_gamma(x_arr: np.ndarray) -> float:
-    """Reproduce sklearn's ``gamma='scale'`` formula explicitly.
+    """Reproduce sklearn's gamma='scale' formula explicitly.
 
-    ``gamma = 1 / (n_features * X.var())``. Used so we can compute the
+    gamma = 1 / (n_features * X.var()). Used so we can compute the
     kernel ourselves with the same gamma sklearn used internally.
     """
     var = x_arr.var()
@@ -285,36 +280,35 @@ def rfa_svm_cost_function(
     """RFA with SVM-RBF cost-function approximation (Hamed, Dara & Kremer 2018).
 
     The SVM is trained once per *added* feature. Candidate features are
-    scored against the *current* ``α`` by computing the change in the dual
-    objective ``½αᵀHα`` element-wise on the kernel: adding feature ``f``
-    multiplies the kernel matrix entrywise by ``exp(-γ Δ²_f)`` where
-    ``Δ²_f`` is the pairwise squared-distance matrix on the new feature.
+    scored against the *current* α by computing the change in the dual
+    objective ½αᵀHα element-wise on the kernel: adding feature f
+    multiplies the kernel matrix entrywise by exp(-γ Δ²_f) where
+    Δ²_f is the pairwise squared-distance matrix on the new feature.
 
     The first feature is selected by mutual information with the label
     (Algorithm 2 leaves the empty-set base case unspecified; this is a
-    fast, deterministic initialisation -- the ``init_mi`` column of the
+    fast, deterministic initialisation - the init_mi column of the
     selection path records it).
 
-    The SVM is binary by construction; ``y_train`` must have exactly two
+    The SVM is binary by construction; y_train must have exactly two
     unique values.
 
     Parameters
-    ----------
     x_train, y_train
-        Training fold; ``y_train`` must be binary.
+        Training fold; y_train must be binary.
     max_features
-        Hard cap on the ranking length. ``None`` = rank every feature.
+        Hard cap on the ranking length. None = rank every feature.
     subsample
         Stratified subsample size for SVM tractability. The kernel matrix
         on support vectors is O(N²); the default of 5,000 keeps a typical
-        run under an hour on a laptop. Set ``None`` to use the full pool
+        run under an hour on a laptop. Set None to use the full pool
         (not recommended for >10k rows).
     C
         SVM regularisation parameter.
     seed
         Random seed for the subsample and the SVM.
     candidate_pool
-        Optional subset of feature names to rank. ``None`` = all columns.
+        Optional subset of feature names to rank. None = all columns.
     """
     t0 = time.time()
     all_features = list(x_train.columns)
@@ -463,7 +457,7 @@ def plot_selection_path(
     * SVM variant: per-step ΔJ vs. k (init row is omitted since it has no
       ΔJ; the score is the change in dual objective, not a cumulative one).
 
-    Saves to ``save_path`` if provided. Uses the project's academic style.
+    Saves to save_path if provided. Uses the project's academic style.
     """
     import matplotlib.pyplot as plt  # local import to keep matplotlib optional
 

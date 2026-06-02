@@ -1,19 +1,18 @@
 """Run Recursive Feature Addition on the train fold (Part 5.2).
 
 Two variants, settled with Prof. Dara on 2026-05-22 (see
-`docs/rfa_bigram_spec.md` §7):
+docs/rfa_bigram_spec.md section 7):
 
-* ``--variant rf``   -- the proposal's RF / val-macro-F1 forward selection.
-* ``--variant svm``  -- the original Hamed, Dara & Kremer (2018) SVM
+* --variant rf   - the proposal's RF / val-macro-F1 forward selection.
+* --variant svm  - the original Hamed, Dara & Kremer (2018) SVM
   cost-function RFA (binary target).
-* ``--variant both`` -- run both and save them side by side.
+* --variant both - run both and save them side by side.
 
-Outputs go under ``reports/feature_selection/`` -- ranking CSV, selection-path
+Outputs go under reports/feature_selection/ - ranking CSV, selection-path
 CSV, hyperparameters JSON, and the selection-path plot.
 
 Examples
---------
-::
+:
 
     # Default: full RF/F1 RFA on attack_cat, plus the SVM RFA on label
     python scripts/run_rfa.py

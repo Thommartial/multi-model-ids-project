@@ -1,4 +1,4 @@
-"""Unit tests for :mod:`src.evaluation.ablation`."""
+"""Unit tests for src.evaluation.ablation."""
 
 from __future__ import annotations
 

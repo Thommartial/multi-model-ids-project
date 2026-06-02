@@ -2,9 +2,9 @@
 
 Every tunable parameter for the project lives here, in one typed place,
 instead of being hard-coded throughout the codebase. Configuration is
-expressed as dataclasses -- so an IDE and the type-checker can catch
-mistakes -- and can be loaded from / saved to YAML files in
-``experiments/configs/``.
+expressed as dataclasses - so an IDE and the type-checker can catch
+mistakes - and can be loaded from / saved to YAML files in
+experiments/configs/.
 
 Why this matters: an experiment is only reproducible if you know exactly
 which settings produced it. Keeping every parameter in one versioned

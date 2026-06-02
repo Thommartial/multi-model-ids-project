@@ -1,12 +1,12 @@
 """Lightweight data-quality validation for the raw UNSW-NB15 files.
 
 Before any analysis or modelling, the raw data is checked against a set
-of expectations -- correct schema, valid label values, known attack
+of expectations - correct schema, valid label values, known attack
 categories, no missing labels. Catching a malformed file here prevents
 silent errors much later in the pipeline.
 
-Note: the plan originally named the ``great-expectations`` library for
-this step. Plain, explicit pandas checks are used instead -- they are
+Note: the plan originally named the great-expectations library for
+this step. Plain, explicit pandas checks are used instead - they are
 easier to read, audit, and defend, and avoid a heavy dependency for what
 is a short, well-defined set of rules.
 """

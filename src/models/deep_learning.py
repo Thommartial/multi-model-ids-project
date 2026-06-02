@@ -1,15 +1,15 @@
 """Deep-learning Phase-1 models (WBS Part 6.3).
 
-Two Keras model wrappers, both implementing the :class:`BaseModel`
-protocol from :mod:`src.evaluation.model_runner` so they slot into the
+Two Keras model wrappers, both implementing the BaseModel
+protocol from src.evaluation.model_runner so they slot into the
 shared harness like every other Phase-1 model:
 
-* :class:`OneDCNN`  -- a 1-D convolutional network on flat-feature
-  records reshaped to ``(n_features, 1)``.
-* :class:`LSTMClassifier` -- an LSTM (optionally bi-directional) on
+* OneDCNN  - a 1-D convolutional network on flat-feature
+  records reshaped to (n_features, 1).
+* LSTMClassifier - an LSTM (optionally bi-directional) on
   sliding windows of consecutive flow records (window size is a
-  hyperparameter; default 8). Predictions are returned **per row** by
-  padding the first ``window_size - 1`` rows with the first available
+  hyperparameter; default 8). Predictions are returned per row by
+  padding the first window_size - 1 rows with the first available
   window's prediction.
 
 Both wrappers:
@@ -17,13 +17,13 @@ Both wrappers:
 * lazily import TensorFlow so the module is fast to import in tests;
 * handle string class labels via an internal encoder;
 * train with class-weighted loss
-  (``imbalance_handling.compute_class_weights``);
+  (imbalance_handling.compute_class_weights);
 * enable early stopping on val macro accuracy / loss + best-on-val
-  checkpoint (per protocol §7 / WBS 6.3.4-5);
-* support ``save`` / ``load`` round-trips via the native ``.keras``
+  checkpoint (per protocol section 7 / WBS 6.3.4-5);
+* support save / load round-trips via the native .keras
   format plus a sidecar JSON for the label encoder.
 
-GPU note: :func:`src.utils.gpu_management.configure_gpu` is called once
+GPU note: src.utils.gpu_management.configure_gpu is called once
 by the runner to enable memory growth on the GTX 1050 (4 GB). The
 wrappers do not call it themselves so tests on CPU stay clean.
 """
@@ -90,10 +90,50 @@ def _seed_tensorflow(seed: int) -> None:
 
 
 def _class_weight_dict(class_weights, encoder: _LabelEncoder) -> dict | None:
-    """Translate user-facing ``{label: weight}`` to Keras' ``{int_id: weight}``."""
+    """Translate user-facing {label: weight} to Keras' {int_id: weight}."""
     if class_weights is None:
         return None
     return {encoder._to_int[c]: float(w) for c, w in class_weights.items() if c in encoder._to_int}  # type: ignore[union-attr]
+
+
+# ---------------------------------------------------------------------------
+# Feature transform for neural-network inputs (fit on TRAIN only)
+# ---------------------------------------------------------------------------
+
+
+class _FeatureTransform:
+    """Signed log1p on heavy-tailed columns, then z-score.
+
+    Flow features like sbytes/sload reach ~1e9 with a few huge outliers,
+    and plain z-scoring leaves those as >100-sigma spikes that dominate
+    the loss. sign(x)*log1p(|x|) compresses the tails first; binary/one-hot
+    columns (values in {0,1}) are left alone. Fit on train only.
+    """
+
+    def __init__(self) -> None:
+        self.log_cols: np.ndarray | None = None  # which columns to log
+        self.scaler: Any = None
+
+    def _log(self, arr: np.ndarray) -> np.ndarray:
+        out = np.asarray(arr, dtype=np.float64).copy()
+        c = self.log_cols
+        out[:, c] = np.sign(out[:, c]) * np.log1p(np.abs(out[:, c]))
+        return out
+
+    def fit(self, arr) -> "_FeatureTransform":
+        from sklearn.preprocessing import StandardScaler
+
+        arr = np.asarray(arr, dtype=np.float64)
+        # Log only continuous columns; anything outside [0, 1] is not a
+        # one-hot indicator.
+        self.log_cols = (arr.max(axis=0) > 1.0) | (arr.min(axis=0) < 0.0)
+        self.scaler = StandardScaler().fit(self._log(arr))
+        return self
+
+    def transform(self, arr) -> np.ndarray:
+        if self.scaler is None:
+            raise RuntimeError("feature transform not fit")
+        return self.scaler.transform(self._log(arr)).astype(np.float32)
 
 
 # ===========================================================================
@@ -106,23 +146,26 @@ class OneDCNNConfig:
     conv_blocks: int = 2
     filters_per_block: int = 64
     kernel_size: int = 5
-    dropout: float = 0.2
+    dropout: float = 0.3
     dense_units: int = 128
-    learning_rate: float = 1e-3
+    learning_rate: float = 5e-4
     batch_size: int = 256
-    max_epochs: int = 50
-    early_stopping_patience: int = 5
+    max_epochs: int = 80
+    early_stopping_patience: int = 8
+    lr_plateau_patience: int = 3
+    lr_plateau_factor: float = 0.5
+    min_lr: float = 1e-5
     optimizer: str = "adam"
 
 
 class OneDCNN:
     """1-D CNN over flat-feature records.
 
-    Each input row of shape ``(n_features,)`` is reshaped to
-    ``(n_features, 1)`` and passed through ``conv_blocks`` blocks of
+    Each input row of shape (n_features,) is reshaped to
+    (n_features, 1) and passed through conv_blocks blocks of
     Conv1D + BatchNorm + ReLU + MaxPool, then GlobalAveragePool ->
     Dense -> softmax. Adapts the output layer to the number of classes
-    seen in ``y_train``.
+    seen in y_train.
     """
 
     def __init__(self, *, seed: int = DEFAULT_SEED, **hparams) -> None:
@@ -130,6 +173,7 @@ class OneDCNN:
         self.cfg = OneDCNNConfig(**hparams)
         self._model: Any = None
         self._encoder = _LabelEncoder()
+        self._ft: _FeatureTransform | None = None  # fitted on TRAIN only; see fit()
         self._tensorboard_dir: str | None = None
 
     def set_tensorboard_dir(self, path: str | Path) -> None:
@@ -168,6 +212,10 @@ class OneDCNN:
 
     def _reshape(self, x) -> np.ndarray:
         arr = x.to_numpy(dtype=np.float32) if isinstance(x, pd.DataFrame) else np.asarray(x, dtype=np.float32)
+        # The processed parquets are unscaled (fine for trees), so the NN
+        # input scaling has to happen here.
+        if self._ft is not None:
+            arr = self._ft.transform(arr)
         if arr.ndim == 2:
             arr = arr[..., None]  # (n, n_features, 1)
         return arr
@@ -178,6 +226,13 @@ class OneDCNN:
         _seed_tensorflow(self.seed)
         self._encoder.fit(y_train)
         y_int = self._encoder.transform(y_train)
+        # Fit the transform on train only; _reshape applies it everywhere.
+        train_2d = (
+            x_train.to_numpy(dtype=np.float32)
+            if isinstance(x_train, pd.DataFrame)
+            else np.asarray(x_train, dtype=np.float32)
+        )
+        self._ft = _FeatureTransform().fit(train_2d)
         x_arr = self._reshape(x_train)
         n_features = x_arr.shape[1]
         self._model = self._build(n_features, self._encoder.n_classes)
@@ -192,6 +247,14 @@ class OneDCNN:
                     monitor="val_loss",
                     patience=self.cfg.early_stopping_patience,
                     restore_best_weights=True,
+                )
+            )
+            callbacks.append(
+                tf.keras.callbacks.ReduceLROnPlateau(
+                    monitor="val_loss",
+                    factor=self.cfg.lr_plateau_factor,
+                    patience=self.cfg.lr_plateau_patience,
+                    min_lr=self.cfg.min_lr,
                 )
             )
         if self._tensorboard_dir is not None:
@@ -226,9 +289,13 @@ class OneDCNN:
         return self._encoder.inverse_transform(np.argmax(proba, axis=1))
 
     def save(self, path: str | Path) -> None:
+        import joblib
+
         p = Path(path)
         p.mkdir(parents=True, exist_ok=True)
         self._model.save(p / "model.keras")
+        if self._ft is not None:
+            joblib.dump(self._ft, p / "feature_transform.joblib")
         with open(p / "encoder.json", "w") as fh:
             json.dump(
                 {
@@ -243,6 +310,7 @@ class OneDCNN:
 
     @classmethod
     def load(cls, path: str | Path) -> "OneDCNN":
+        import joblib
         import tensorflow as tf
 
         p = Path(path)
@@ -251,6 +319,8 @@ class OneDCNN:
         m = cls(seed=meta["seed"], **meta["cfg"])
         m._encoder._to_int = {k: int(v) for k, v in meta["to_int"].items()}
         m._encoder._to_label = list(meta["to_label"])
+        ft_path = p / "feature_transform.joblib"
+        m._ft = joblib.load(ft_path) if ft_path.exists() else None
         m._model = tf.keras.models.load_model(p / "model.keras")
         return m
 
@@ -270,24 +340,27 @@ class LSTMConfig:
     lstm_layers: int = 1
     hidden_size: int = 128
     bidirectional: bool = False
-    dropout: float = 0.2
-    learning_rate: float = 1e-3
+    dropout: float = 0.3
+    learning_rate: float = 5e-4
     batch_size: int = 256
-    max_epochs: int = 50
-    early_stopping_patience: int = 5
+    max_epochs: int = 80
+    early_stopping_patience: int = 8
+    lr_plateau_patience: int = 3
+    lr_plateau_factor: float = 0.5
+    min_lr: float = 1e-5
 
 
 def _build_windows(x: np.ndarray, y: np.ndarray, window_size: int) -> tuple[np.ndarray, np.ndarray, int]:
     """Sliding-window builder; returns (windows, targets, n_padded_at_front).
 
     Windows are stride-1, contiguous; the target of a window is the label
-    of its **last** record (many-to-one).
+    of its last record (many-to-one).
     """
     n = len(x)
     if n < window_size:
         raise ValueError(f"need at least {window_size} rows, got {n}")
     windows = np.lib.stride_tricks.sliding_window_view(x, window_size, axis=0)
-    # shape: (n - W + 1, W, n_features)  -- but stride_tricks returns
+    # shape: (n - W + 1, W, n_features)  - but stride_tricks returns
     # (n - W + 1, n_features, W); we need to transpose:
     windows = np.transpose(windows, (0, 2, 1))
     targets = y[window_size - 1 :]
@@ -297,10 +370,10 @@ def _build_windows(x: np.ndarray, y: np.ndarray, window_size: int) -> tuple[np.n
 class LSTMClassifier:
     """LSTM with internal sliding-window builder.
 
-    ``fit`` and ``predict`` accept 2-D ``(n_records, n_features)``
+    fit and predict accept 2-D (n_records, n_features)
     input; the wrapper builds (n - W + 1) overlapping length-W windows
-    inside. Predictions are returned **per input row** by padding the
-    first ``W - 1`` rows with the prediction of the first available
+    inside. Predictions are returned per input row by padding the
+    first W - 1 rows with the prediction of the first available
     window.
     """
 
@@ -309,6 +382,7 @@ class LSTMClassifier:
         self.cfg = LSTMConfig(**hparams)
         self._model: Any = None
         self._encoder = _LabelEncoder()
+        self._ft: _FeatureTransform | None = None  # fitted on TRAIN only; see fit()
         self._tensorboard_dir: str | None = None
 
     def set_tensorboard_dir(self, path: str | Path) -> None:
@@ -338,8 +412,11 @@ class LSTMClassifier:
 
     def _windows(self, x, y=None):
         arr = x.to_numpy(dtype=np.float32) if isinstance(x, pd.DataFrame) else np.asarray(x, dtype=np.float32)
+        # Scale before windowing (the parquets are unscaled).
+        if self._ft is not None:
+            arr = self._ft.transform(arr)
         if y is None:
-            # Need windows for predict -- still build them with a dummy y.
+            # Need windows for predict - still build them with a dummy y.
             n = len(arr)
             if n < self.cfg.window_size:
                 raise ValueError(f"need at least {self.cfg.window_size} rows, got {n}")
@@ -357,6 +434,14 @@ class LSTMClassifier:
         self._encoder.fit(y_train)
         y_int = self._encoder.transform(y_train)
 
+        # Fit the transform on train only; _windows applies it everywhere.
+        train_2d = (
+            x_train.to_numpy(dtype=np.float32)
+            if isinstance(x_train, pd.DataFrame)
+            else np.asarray(x_train, dtype=np.float32)
+        )
+        self._ft = _FeatureTransform().fit(train_2d)
+
         x_tr_w, y_tr_w, _ = self._windows(x_train, y_int)
         n_features = x_tr_w.shape[2]
         self._model = self._build(n_features, self._encoder.n_classes)
@@ -372,6 +457,14 @@ class LSTMClassifier:
                     monitor="val_loss",
                     patience=self.cfg.early_stopping_patience,
                     restore_best_weights=True,
+                )
+            )
+            callbacks.append(
+                tf.keras.callbacks.ReduceLROnPlateau(
+                    monitor="val_loss",
+                    factor=self.cfg.lr_plateau_factor,
+                    patience=self.cfg.lr_plateau_patience,
+                    min_lr=self.cfg.min_lr,
                 )
             )
         if self._tensorboard_dir is not None:
@@ -401,7 +494,7 @@ class LSTMClassifier:
             raise RuntimeError("predict_proba before fit")
         x_w, _, pad = self._windows(x, None)
         proba = self._model.predict(x_w, verbose=0)
-        # pad first `pad` rows with the first prediction so output length == input length
+        # pad first pad rows with the first prediction so output length == input length
         if pad > 0:
             first = np.broadcast_to(proba[0:1], (pad, proba.shape[1]))
             proba = np.concatenate([first, proba], axis=0)
@@ -412,9 +505,13 @@ class LSTMClassifier:
         return self._encoder.inverse_transform(np.argmax(proba, axis=1))
 
     def save(self, path: str | Path) -> None:
+        import joblib
+
         p = Path(path)
         p.mkdir(parents=True, exist_ok=True)
         self._model.save(p / "model.keras")
+        if self._ft is not None:
+            joblib.dump(self._ft, p / "feature_transform.joblib")
         with open(p / "encoder.json", "w") as fh:
             json.dump(
                 {
@@ -429,6 +526,7 @@ class LSTMClassifier:
 
     @classmethod
     def load(cls, path: str | Path) -> "LSTMClassifier":
+        import joblib
         import tensorflow as tf
 
         p = Path(path)
@@ -437,6 +535,8 @@ class LSTMClassifier:
         m = cls(seed=meta["seed"], **meta["cfg"])
         m._encoder._to_int = {k: int(v) for k, v in meta["to_int"].items()}
         m._encoder._to_label = list(meta["to_label"])
+        ft_path = p / "feature_transform.joblib"
+        m._ft = joblib.load(ft_path) if ft_path.exists() else None
         m._model = tf.keras.models.load_model(p / "model.keras")
         return m
 

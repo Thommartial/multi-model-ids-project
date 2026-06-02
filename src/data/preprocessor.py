@@ -6,23 +6,21 @@ leakage-safe sequence:
     clean  ->  stratified split  ->  fit encoders on TRAIN only  ->  transform
 
 Why the order matters
----------------------
-Every transformation that *learns* something from the data -- the one-hot
+Every transformation that *learns* something from the data - the one-hot
 category vocabulary, the z-score mean and standard deviation, the median
-used for imputation -- is fitted on the **training split alone** and then
+used for imputation - is fitted on the training split alone and then
 applied unchanged to the validation and test splits. Fitting on the whole
 dataset would leak information from validation/test back into training
 and silently inflate every score the project later reports. Splitting
 *before* fitting is what keeps the evaluation honest.
 
 Scaling policy (proposal Section 5.1)
--------------------------------------
-:meth:`Preprocessor.transform` takes a ``scale`` flag. Neural-network
-inputs are z-score standardised (``scale=True``); tree-based models
+Preprocessor.transform takes a scale flag. Neural-network
+inputs are z-score standardised (scale=True); tree-based models
 (Random Forest, XGBoost) are invariant to monotonic feature scaling and
-use the unscaled features (``scale=False``). One-hot columns are never
+use the unscaled features (scale=False). One-hot columns are never
 scaled. The processed files saved to disk are unscaled; the fitted
-scaler travels with the saved :class:`Preprocessor` so a network can
+scaler travels with the saved Preprocessor so a network can
 apply it on load.
 """
 
@@ -38,7 +36,7 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from src.utils.config import load_config
 from src.utils.reproducibility import DEFAULT_SEED
 
-# Identifier/target columns -- never model features.
+# Identifier/target columns - never model features.
 ARTEFACT_COLS = ["id"]  # UNSW-NB15 partitioned set; CIC-IDS2017 adds IP/timestamp columns
 CATEGORICAL_COLS = ["proto", "service", "state"]
 TARGET_BINARY = "label"
@@ -51,7 +49,7 @@ class Preprocessor:
     def __init__(self, config=None, min_category_freq: int = 20):
         # min_category_freq: categorical values seen fewer than this many
         # times in TRAIN are merged into one "infrequent" bucket. This
-        # tames high-cardinality columns such as `proto` (~130 values,
+        # tames high-cardinality columns such as proto (~130 values,
         # most of them rare) without discarding information outright.
         self.config = config or load_config()
         self.min_category_freq = min_category_freq
@@ -88,8 +86,8 @@ class Preprocessor:
     def stratified_split(self, df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
         """Split into train/val/test, preserving class proportions.
 
-        Stratifying on the 10-way ``attack_cat`` keeps every attack
-        category -- including Worms, the rarest -- present in all three
+        Stratifying on the 10-way attack_cat keeps every attack
+        category - including Worms, the rarest - present in all three
         splits, and automatically balances the binary label too.
         """
         c = self.config.data
@@ -145,8 +143,8 @@ class Preprocessor:
     ) -> tuple[pd.DataFrame, pd.Series, pd.Series]:
         """Apply the fitted pipeline. Returns (X, y_binary, y_multiclass).
 
-        ``scale=True`` z-score standardises the numeric features (for
-        neural networks); ``scale=False`` leaves them raw (for tree
+        scale=True z-score standardises the numeric features (for
+        neural networks); scale=False leaves them raw (for tree
         models). One-hot columns are returned 0/1 either way.
         """
         if self.encoder is None or self.scaler is None:
@@ -175,7 +173,7 @@ def make_sliding_windows(
 ) -> tuple[np.ndarray, np.ndarray]:
     """Turn 2-D records into overlapping 3-D sequences for LSTM / CNN-LSTM.
 
-    Given ``x`` of shape (n_records, n_features), returns windows of shape
+    Given x of shape (n_records, n_features), returns windows of shape
     (n_windows, window_size, n_features); each window's target is the
     label of its final record. The records are used in the order given --
     the ordering policy for sequential models is finalised in Part 6.3.

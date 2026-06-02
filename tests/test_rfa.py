@@ -1,4 +1,4 @@
-"""Unit tests for :mod:`src.data.rfa`."""
+"""Unit tests for src.data.rfa."""
 
 from __future__ import annotations
 
@@ -111,7 +111,7 @@ def test_rf_rfa_patience_early_stops_on_flat_landscape() -> None:
         n_estimators=20, max_depth=4, patience=2, improvement_threshold=0.01,
         seed=42, n_jobs=1,
     )
-    # With a flat landscape patience should stop early -- fewer than all 6 added.
+    # With a flat landscape patience should stop early - fewer than all 6 added.
     assert len(result.selected) < 6
 
 
@@ -160,7 +160,7 @@ def test_svm_rfa_smoke_runs_and_initialises_with_informative() -> None:
 
     The cost-function approximation's per-step preference is sensitive to
     support-vector spread on very small synthetic datasets and may rank a
-    noise feature ahead of the second informative one -- this is a known
+    noise feature ahead of the second informative one - this is a known
     behaviour of the approximation, not a bug. On real-scale data with
     hundreds of features and tens of thousands of samples the ranking is
     much more stable. We test that here only with the looser property
