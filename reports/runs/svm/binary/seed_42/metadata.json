@@ -1,0 +1,8 @@
+{
+  "model": "svm",
+  "seed": 42,
+  "task": "binary",
+  "n_features": 190,
+  "runtime_seconds": 312.99084067344666,
+  "timestamp": "2026-05-27 01:29:04"
+}

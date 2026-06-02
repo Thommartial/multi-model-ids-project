@@ -3,6 +3,6 @@
   "seed": 42,
   "task": "binary",
   "n_features": 190,
-  "runtime_seconds": 57.253345251083374,
-  "timestamp": "2026-05-27 00:38:45"
+  "runtime_seconds": 135.3661458492279,
+  "timestamp": "2026-06-01 19:22:36"
 }

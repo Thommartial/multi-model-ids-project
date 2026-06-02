@@ -1,0 +1,8 @@
+{
+  "model": "cnn_1d",
+  "seed": 44,
+  "task": "multiclass",
+  "n_features": 190,
+  "runtime_seconds": 126.42081212997437,
+  "timestamp": "2026-06-01 19:16:30"
+}

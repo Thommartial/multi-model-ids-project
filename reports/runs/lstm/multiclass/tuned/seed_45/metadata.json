@@ -1,0 +1,8 @@
+{
+  "model": "lstm",
+  "seed": 45,
+  "task": "multiclass",
+  "n_features": 190,
+  "runtime_seconds": 178.59746527671814,
+  "timestamp": "2026-06-01 21:18:25"
+}

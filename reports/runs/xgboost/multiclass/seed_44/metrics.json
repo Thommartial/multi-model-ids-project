@@ -3,5 +3,7 @@
   "val_macro_f1": 0.5927243828273523,
   "val_balanced_accuracy": 0.6161745079940771,
   "test_macro_f1": 0.6121677683290216,
-  "test_balanced_accuracy": 0.6393962242752057
+  "test_balanced_accuracy": 0.6393962242752057,
+  "train_macro_f1": 0.7967886747793179,
+  "train_balanced_accuracy": 0.8684458977534147
 }

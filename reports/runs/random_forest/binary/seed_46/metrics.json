@@ -1,0 +1,15 @@
+{
+  "runtime_s": 24.12988781929016,
+  "val_macro_f1": 0.9189496684043013,
+  "val_balanced_accuracy": 0.9187563019426885,
+  "val_auroc": 0.9814316352521664,
+  "val_pr_auc": 0.9801821321787432,
+  "test_macro_f1": 0.9186490693454731,
+  "test_balanced_accuracy": 0.9183995335434343,
+  "test_auroc": 0.9816026251799213,
+  "test_pr_auc": 0.980661744652218,
+  "train_macro_f1": 0.9984154665618865,
+  "train_balanced_accuracy": 0.9984267233980966,
+  "train_auroc": 0.9999949861363471,
+  "train_pr_auc": 0.9999943952668903
+}

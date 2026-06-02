@@ -1,0 +1,1 @@
+{"to_int": {"0": 0, "1": 1}, "to_label": [0, 1], "cfg": {"conv_blocks": 2, "filters_per_block": 64, "kernel_size": 5, "dropout": 0.3, "dense_units": 128, "learning_rate": 0.0005, "batch_size": 256, "max_epochs": 80, "early_stopping_patience": 8, "lr_plateau_patience": 3, "lr_plateau_factor": 0.5, "min_lr": 1e-05, "optimizer": "adam"}, "seed": 46}

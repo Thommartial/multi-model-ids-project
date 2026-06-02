@@ -1,0 +1,15 @@
+feature,group
+sbytes,basic_flow
+dbytes,basic_flow
+ct_dst_src_ltm,connection_tracking
+sttl,general_purpose
+state_infrequent_sklearn,basic_flow
+service_-,basic_flow
+smean,content
+proto_unas,basic_flow
+sjit,time
+service_http,basic_flow
+proto_crtp,basic_flow
+service_ftp,basic_flow
+proto_pup,basic_flow
+proto_ipv6-no,basic_flow

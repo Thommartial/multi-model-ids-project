@@ -1,0 +1,8 @@
+{
+  "model": "rule_based",
+  "seed": 46,
+  "task": "binary",
+  "n_features": 190,
+  "runtime_seconds": 1.3791594505310059,
+  "timestamp": "2026-05-27 01:17:23"
+}

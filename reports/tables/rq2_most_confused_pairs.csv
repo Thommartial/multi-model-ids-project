@@ -1,0 +1,13 @@
+true,predicted_as,frac_of_true_class
+Backdoor,Analysis,0.4948
+Analysis,Backdoor,0.3505
+DoS,Exploits,0.3113
+Worms,Exploits,0.2573
+DoS,Analysis,0.2069
+Normal,Fuzzers,0.1679
+Reconnaissance,Shellcode,0.1362
+DoS,Backdoor,0.1276
+Worms,Shellcode,0.108
+Shellcode,Reconnaissance,0.1059
+Backdoor,DoS,0.0939
+Reconnaissance,Analysis,0.0822

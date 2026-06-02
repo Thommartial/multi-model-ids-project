@@ -1,0 +1,11 @@
+,mean_f1,std_f1,test_support
+Backdoor,0.1333,0.0841,282
+Analysis,0.1537,0.0804,305
+DoS,0.1736,0.1391,825
+Worms,0.1988,0.2652,25
+Shellcode,0.3614,0.2289,219
+Fuzzers,0.5604,0.0798,3144
+Reconnaissance,0.5796,0.1958,1498
+Exploits,0.7193,0.0954,4115
+Normal,0.8522,0.0502,12859
+Generic,0.8922,0.017,1140
