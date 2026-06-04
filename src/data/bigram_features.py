@@ -1,7 +1,7 @@
 """Flow-pair ("bigram") features for the Multi-Model IDS project.
 
 An adaptation of the Hamed, Dara & Kremer (2018) payload-bigram
-technique to flow-summary records. Settled with Prof. Dara on
+technique to flow-summary records. Settled with the supervisor on
 2026-05-22 (docs/rfa_bigram_spec.md section 7;
 experimental_protocol.md section 10.1 condition 5).
 

@@ -72,7 +72,7 @@ project's *methods* directly depend on.
 
 - Paywalled papers are best obtained through the University of Guelph library.
 - The Hamed, Dara & Kremer (2018) paper is best obtained directly from
-  Prof. Dara (a co-author); the open thesis covers the same methods in full.
+  the authors; the open thesis covers the same methods in full.
 - The proposal cites additional survey and deep-learning IDS papers
   (2023–2026); those remain in the proposal's own `references.bib`, collated by
   the student.

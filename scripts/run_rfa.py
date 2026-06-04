@@ -1,6 +1,6 @@
 """Run Recursive Feature Addition on the train fold (Part 5.2).
 
-Two variants, settled with Prof. Dara on 2026-05-22 (see
+Two variants, settled with the supervisor on 2026-05-22 (see
 docs/rfa_bigram_spec.md section 7):
 
 * --variant rf   - the proposal's RF / val-macro-F1 forward selection.

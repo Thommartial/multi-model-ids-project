@@ -7,8 +7,6 @@ evaluated under a single unified experimental framework.
 **CIS\*6560 Research Project** — Master of Cybersecurity and Threat Intelligence,
 University of Guelph.
 
-- **Student:** Thomas Martial Ekwelle Epalle (1406946)
-- **Supervisor:** Prof. Rozita Dara
 
 ## Datasets
 

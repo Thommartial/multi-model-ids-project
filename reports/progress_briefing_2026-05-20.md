@@ -1,8 +1,8 @@
 # Project Progress Briefing — Multi-Model Intrusion Detection
 
-**Prepared for:** the supervision meeting with Prof. Rozita Dara
-**Student:** Thomas Martial Ekwelle Epalle (1406946) · CIS\*6560 · MCTI, University of Guelph
-**Date:** 20 May 2026 · **Meeting held:** 22 May 2026 · **Status:** the two blocking method decisions in Section 6 were resolved with Prof. Dara (see §6.4); work has resumed. Items 7–9 in §9 (publication angle, HPC access, end-of-June checkpoint) were not discussed and remain open.
+**Prepared for:** the project supervision meeting
+**Project:** CIS\*6560 · MCTI, University of Guelph
+**Date:** 20 May 2026 · **Meeting held:** 22 May 2026 · **Status:** the two blocking method decisions in Section 6 were resolved with the supervisor (see §6.4); work has resumed. Items 7–9 in §9 (publication angle, HPC access, end-of-June checkpoint) were not discussed and remain open.
 
 This briefing summarises everything completed so far, explains the reasoning
 behind each step, states clearly how the approved proposal has been followed
@@ -270,11 +270,11 @@ correction to a published dataset claim, not merely repeat existing numbers.
 
 The proposal's feature-engineering study (§5.1) is built on **Recursive Feature
 Addition (RFA)** and a **bigram technique**, both attributed to Hamed, Dara &
-Kremer (2018) — Prof. Dara's own work. Before implementing them, the original
+Kremer (2018). Before implementing them, the original
 method was studied in full (Section 2.4). This surfaced two points where the
 proposal's description differs materially from the published method. Neither is
-a mistake to be "corrected" silently — both are design decisions that need your
-direction, because you co-invented the original technique.
+a mistake to be "corrected" silently — both are design decisions that need
+supervisor direction, given familiarity with the original technique.
 
 ### 6.1 What the original paper does
 
@@ -334,7 +334,7 @@ to walk through in the meeting.
 
 ### 6.4 Resolution (post-meeting, 2026-05-22)
 
-Both discrepancies were resolved with Prof. Dara:
+Both discrepancies were resolved with the supervisor:
 
 1. **RFA engine — implement *both*, as a comparison.** The published SVM
    cost-function RFA (Hamed, Dara & Kremer 2018) and the proposal's
@@ -407,14 +407,14 @@ are two credible ones:
 
 Realistically: a workshop paper, a student symposium, or a mid-tier journal/
 conference is plausible **if** the work leans into rigour and the class-level
-analysis; a top-tier venue would need more methodological novelty. Prof. Dara is
+analysis; a top-tier venue would need more methodological novelty. The supervisor is
 the right person to judge the venue and feasibility — this is a key point to
 discuss. And it is worth remembering that an MCTI thesis does **not** need to be
 published to be a success; publishability is an upside, not a requirement.
 
 ---
 
-## 9. Points to raise with Prof. Dara
+## 9. Points to raise with the supervisor
 
 The first two were **blocking decisions** — settled in the 2026-05-22 meeting.
 The rest are confirmations on work already done and forward-planning items.

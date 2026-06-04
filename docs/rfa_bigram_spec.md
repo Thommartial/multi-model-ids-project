@@ -7,7 +7,7 @@ implementation (Part 5) must follow.**
 > that the proposal's descriptions of *both* RFA and the *bigram technique*
 > differ materially from the actual Hamed, Dara & Kremer (2018) method. These
 > differences are not cosmetic — they change what gets implemented. They must
-> be resolved with Prof. Dara (a co-author of the original) before Part 5.
+> be resolved with the supervisor before Part 5.
 
 ---
 
@@ -16,7 +16,7 @@ implementation (Part 5) must follow.**
 - **Hamed, T., Dara, R., & Kremer, S. C. (2018).** "Network intrusion detection
   system based on recursive feature addition and bigram technique."
   *Computers & Security* — Elsevier (paywalled; obtain via the library or from
-  Prof. Dara).
+  the supervisor).
 - **Hamed, T. (PhD thesis).** "Recursive Feature Addition: a Novel Feature
   Selection Technique." University of Guelph — **open access** via the UoG
   Atrium repository; downloaded to `references/`. The thesis gives the full
@@ -86,7 +86,7 @@ It was applied to the **ISCX** dataset, which *contains payload content*.
 
 ---
 
-## 5. The discrepancies — to resolve with Prof. Dara
+## 5. The discrepancies — to resolve with the supervisor
 
 | Aspect | Original (Hamed et al. 2018) | Proposal's description |
 |---|---|---|
@@ -112,12 +112,12 @@ It was applied to the **ISCX** dataset, which *contains payload content*.
    content** — only flow-summary statistics — so the original payload-bigram
    technique *cannot be applied to it at all*. The proposal's "pairs of
    consecutive flow records" is a separate idea. This is the more serious gap
-   and the one that most needs Prof. Dara's input, since she co-invented the
+   and the one that most needs the supervisor's input on the
    original technique.
 
 ---
 
-## 6. Working specification for Part 5 (confirmed with Prof. Dara, 2026-05-22)
+## 6. Working specification for Part 5 (confirmed with the supervisor, 2026-05-22)
 
 Both discrepancies were discussed in the 22 May 2026 supervision meeting and
 resolved. The feature-engineering study implements:
@@ -147,7 +147,7 @@ comparison is clean.
 
 ---
 
-## 7. Decisions resolved with Prof. Dara (2026-05-22)
+## 7. Decisions resolved with the supervisor (2026-05-22)
 
 1. **RFA engine — implement both, as a comparison.** The published SVM
    cost-function RFA (Hamed, Dara & Kremer 2018) and the proposal's
