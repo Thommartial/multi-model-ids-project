@@ -25,11 +25,11 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 
 try:  # XGBoost is in requirements.txt but keep the import optional for tests
-    from xgboost import XGBClassifier  # type: ignore
+    from xgboost import XGBClassifier
 
     _XGBOOST_AVAILABLE = True
 except Exception:  # pragma: no cover - optional dep
-    XGBClassifier = None  # type: ignore[assignment]
+    XGBClassifier = None  # type: ignore[assignment, misc]
     _XGBOOST_AVAILABLE = False
 
 from src.utils.reproducibility import DEFAULT_SEED

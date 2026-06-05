@@ -92,7 +92,9 @@ def _class_weight_dict(class_weights, encoder: _LabelEncoder) -> dict | None:
     """Translate user-facing {label: weight} to Keras' {int_id: weight}."""
     if class_weights is None:
         return None
-    return {encoder._to_int[c]: float(w) for c, w in class_weights.items() if c in encoder._to_int}  # type: ignore[union-attr]
+    to_int = encoder._to_int
+    assert to_int is not None  # set by encoder.fit() before this runs
+    return {to_int[c]: float(w) for c, w in class_weights.items() if c in to_int}
 
 
 # ---------------------------------------------------------------------------
