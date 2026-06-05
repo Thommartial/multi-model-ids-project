@@ -39,8 +39,13 @@ def test_onedcnn_fit_predict_returns_one_per_row() -> None:
 
     x, y = _toy_two_class()
     model = get_onedcnn(
-        seed=42, conv_blocks=1, filters_per_block=8, kernel_size=3,
-        dense_units=16, max_epochs=2, batch_size=32,
+        seed=42,
+        conv_blocks=1,
+        filters_per_block=8,
+        kernel_size=3,
+        dense_units=16,
+        max_epochs=2,
+        batch_size=32,
     )
     model.fit(x.iloc[:150], y[:150], x_val=x.iloc[150:], y_val=y[150:])
     preds = model.predict(x)
@@ -61,8 +66,13 @@ def test_onedcnn_save_load_roundtrip(tmp_path: Path) -> None:
 
     x, y = _toy_two_class(n=120)
     model = get_onedcnn(
-        seed=42, conv_blocks=1, filters_per_block=8, kernel_size=3,
-        dense_units=16, max_epochs=1, batch_size=32,
+        seed=42,
+        conv_blocks=1,
+        filters_per_block=8,
+        kernel_size=3,
+        dense_units=16,
+        max_epochs=1,
+        batch_size=32,
     )
     model.fit(x, y)
     pred_before = model.predict(x)
@@ -80,8 +90,12 @@ def test_lstm_fit_predict_pads_to_input_length() -> None:
 
     x, y = _toy_two_class(n=200)
     model = get_lstm(
-        seed=42, window_size=4, lstm_layers=1, hidden_size=16,
-        max_epochs=2, batch_size=32,
+        seed=42,
+        window_size=4,
+        lstm_layers=1,
+        hidden_size=16,
+        max_epochs=2,
+        batch_size=32,
     )
     model.fit(x.iloc[:150], y[:150], x_val=x.iloc[150:], y_val=y[150:])
     preds = model.predict(x)
@@ -93,7 +107,8 @@ def test_lstm_raises_on_too_few_rows() -> None:
     from src.models.deep_learning import get_lstm
 
     x, y = _toy_two_class(n=5)
-    model = get_lstm(seed=42, window_size=10, lstm_layers=1, hidden_size=8,
-                     max_epochs=1, batch_size=8)
+    model = get_lstm(
+        seed=42, window_size=10, lstm_layers=1, hidden_size=8, max_epochs=1, batch_size=8
+    )
     with pytest.raises(ValueError, match="at least"):
         model.fit(x, y)

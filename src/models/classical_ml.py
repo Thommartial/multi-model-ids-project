@@ -95,7 +95,9 @@ class RandomForestModel:
     def predict_proba(self, x):
         if self._rf is None:
             raise RuntimeError("predict_proba before fit")
-        return self._rf.predict_proba(x.to_numpy() if isinstance(x, pd.DataFrame) else np.asarray(x))
+        return self._rf.predict_proba(
+            x.to_numpy() if isinstance(x, pd.DataFrame) else np.asarray(x)
+        )
 
     def save(self, path: str | Path) -> None:
         p = Path(path)
@@ -227,8 +229,7 @@ class XGBoostModel:
     ) -> None:
         if not _XGBOOST_AVAILABLE:
             raise ImportError(
-                "xgboost is not installed. `pip install xgboost` (or use the "
-                "project conda env)."
+                "xgboost is not installed. `pip install xgboost` (or use the " "project conda env)."
             )
         self.n_estimators = n_estimators
         self.max_depth = max_depth

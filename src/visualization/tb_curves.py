@@ -39,7 +39,9 @@ def read_series(run_dir: str, split: str, tag: str) -> np.ndarray | None:
     return np.array([v for _, v in pts], dtype=float)
 
 
-def seed_band(series_list: list[np.ndarray | None]) -> tuple[np.ndarray, np.ndarray, np.ndarray] | None:
+def seed_band(
+    series_list: list[np.ndarray | None],
+) -> tuple[np.ndarray, np.ndarray, np.ndarray] | None:
     """Mean and std across seeds, aligned by epoch index.
 
     Seeds early-stop at different epochs, so the curves have different

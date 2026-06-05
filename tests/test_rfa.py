@@ -13,7 +13,6 @@ from src.data.rfa import (
     rfa_svm_cost_function,
 )
 
-
 # ---------------------------------------------------------------------------
 # Synthetic dataset helpers
 # ---------------------------------------------------------------------------
@@ -73,8 +72,15 @@ def _multiclass_dataset(
 def test_rf_rfa_returns_correctly_typed_result() -> None:
     x_tr, x_val, y_tr, y_val = _multiclass_dataset(n=300)
     result = rfa_random_forest(
-        x_tr, y_tr, x_val, y_val,
-        n_estimators=30, max_depth=5, max_features=3, seed=42, n_jobs=1,
+        x_tr,
+        y_tr,
+        x_val,
+        y_val,
+        n_estimators=30,
+        max_depth=5,
+        max_features=3,
+        seed=42,
+        n_jobs=1,
     )
     assert isinstance(result, RFAResult)
     assert result.method == "rf_macro_f1"
@@ -91,8 +97,15 @@ def test_rf_rfa_returns_correctly_typed_result() -> None:
 def test_rf_rfa_picks_informative_features_first() -> None:
     x_tr, x_val, y_tr, y_val = _multiclass_dataset(n=400)
     result = rfa_random_forest(
-        x_tr, y_tr, x_val, y_val,
-        n_estimators=50, max_depth=8, max_features=2, seed=42, n_jobs=1,
+        x_tr,
+        y_tr,
+        x_val,
+        y_val,
+        n_estimators=50,
+        max_depth=8,
+        max_features=2,
+        seed=42,
+        n_jobs=1,
     )
     # On this synthetic problem the two informative features should be ranked 1 and 2.
     assert set(result.selected) == {"informative1", "informative2"}
@@ -107,9 +120,16 @@ def test_rf_rfa_patience_early_stops_on_flat_landscape() -> None:
     y_tr = rng.randint(0, 3, size=n)
     y_val = rng.randint(0, 3, size=n)
     result = rfa_random_forest(
-        x_tr, y_tr, x_val, y_val,
-        n_estimators=20, max_depth=4, patience=2, improvement_threshold=0.01,
-        seed=42, n_jobs=1,
+        x_tr,
+        y_tr,
+        x_val,
+        y_val,
+        n_estimators=20,
+        max_depth=4,
+        patience=2,
+        improvement_threshold=0.01,
+        seed=42,
+        n_jobs=1,
     )
     # With a flat landscape patience should stop early - fewer than all 6 added.
     assert len(result.selected) < 6
@@ -118,12 +138,26 @@ def test_rf_rfa_patience_early_stops_on_flat_landscape() -> None:
 def test_rf_rfa_reproducible_with_same_seed() -> None:
     x_tr, x_val, y_tr, y_val = _multiclass_dataset(n=200)
     r1 = rfa_random_forest(
-        x_tr, y_tr, x_val, y_val,
-        n_estimators=20, max_depth=4, max_features=3, seed=42, n_jobs=1,
+        x_tr,
+        y_tr,
+        x_val,
+        y_val,
+        n_estimators=20,
+        max_depth=4,
+        max_features=3,
+        seed=42,
+        n_jobs=1,
     )
     r2 = rfa_random_forest(
-        x_tr, y_tr, x_val, y_val,
-        n_estimators=20, max_depth=4, max_features=3, seed=42, n_jobs=1,
+        x_tr,
+        y_tr,
+        x_val,
+        y_val,
+        n_estimators=20,
+        max_depth=4,
+        max_features=3,
+        seed=42,
+        n_jobs=1,
     )
     assert r1.selected == r2.selected
 
@@ -142,7 +176,11 @@ def test_svm_rfa_rejects_non_binary_target() -> None:
 def test_svm_rfa_returns_correctly_typed_result() -> None:
     x, y = _binary_dataset(n=300)
     result = rfa_svm_cost_function(
-        x, y, max_features=3, subsample=None, seed=42,
+        x,
+        y,
+        max_features=3,
+        subsample=None,
+        seed=42,
     )
     assert isinstance(result, RFAResult)
     assert result.method == "svm_cost_function"
@@ -168,7 +206,11 @@ def test_svm_rfa_smoke_runs_and_initialises_with_informative() -> None:
     """
     x, y = _binary_dataset(n=600)
     result = rfa_svm_cost_function(
-        x, y, max_features=3, subsample=None, seed=42,
+        x,
+        y,
+        max_features=3,
+        subsample=None,
+        seed=42,
     )
     # First feature (MI init) is informative.
     assert result.selected[0] in {"informative1", "informative2"}
@@ -192,8 +234,15 @@ def test_svm_rfa_reproducible_with_same_seed() -> None:
 def test_get_selection_path_dataframe_returns_copy() -> None:
     x_tr, x_val, y_tr, y_val = _multiclass_dataset(n=200)
     result = rfa_random_forest(
-        x_tr, y_tr, x_val, y_val,
-        n_estimators=20, max_depth=4, max_features=2, seed=42, n_jobs=1,
+        x_tr,
+        y_tr,
+        x_val,
+        y_val,
+        n_estimators=20,
+        max_depth=4,
+        max_features=2,
+        seed=42,
+        n_jobs=1,
     )
     df = get_selection_path_dataframe(result)
     df.loc[0, "feature_added"] = "MUTATED"

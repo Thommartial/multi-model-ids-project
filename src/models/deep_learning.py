@@ -40,7 +40,6 @@ import pandas as pd
 
 from src.utils.reproducibility import DEFAULT_SEED
 
-
 # ---------------------------------------------------------------------------
 # Shared label-encoding helpers
 # ---------------------------------------------------------------------------
@@ -211,7 +210,11 @@ class OneDCNN:
         return model
 
     def _reshape(self, x) -> np.ndarray:
-        arr = x.to_numpy(dtype=np.float32) if isinstance(x, pd.DataFrame) else np.asarray(x, dtype=np.float32)
+        arr = (
+            x.to_numpy(dtype=np.float32)
+            if isinstance(x, pd.DataFrame)
+            else np.asarray(x, dtype=np.float32)
+        )
         # The processed parquets are unscaled (fine for trees), so the NN
         # input scaling has to happen here.
         if self._ft is not None:
@@ -350,7 +353,9 @@ class LSTMConfig:
     min_lr: float = 1e-5
 
 
-def _build_windows(x: np.ndarray, y: np.ndarray, window_size: int) -> tuple[np.ndarray, np.ndarray, int]:
+def _build_windows(
+    x: np.ndarray, y: np.ndarray, window_size: int
+) -> tuple[np.ndarray, np.ndarray, int]:
     """Sliding-window builder; returns (windows, targets, n_padded_at_front).
 
     Windows are stride-1, contiguous; the target of a window is the label
@@ -397,7 +402,9 @@ class LSTMClassifier:
         x = inp
         for i in range(self.cfg.lstm_layers):
             return_seq = i < self.cfg.lstm_layers - 1
-            cell = layers.LSTM(self.cfg.hidden_size, return_sequences=return_seq, dropout=self.cfg.dropout)
+            cell = layers.LSTM(
+                self.cfg.hidden_size, return_sequences=return_seq, dropout=self.cfg.dropout
+            )
             x = layers.Bidirectional(cell)(x) if self.cfg.bidirectional else cell(x)
         x = layers.Dropout(self.cfg.dropout)(x)
         out = layers.Dense(n_classes, activation="softmax")(x)
@@ -411,7 +418,11 @@ class LSTMClassifier:
         return model
 
     def _windows(self, x, y=None):
-        arr = x.to_numpy(dtype=np.float32) if isinstance(x, pd.DataFrame) else np.asarray(x, dtype=np.float32)
+        arr = (
+            x.to_numpy(dtype=np.float32)
+            if isinstance(x, pd.DataFrame)
+            else np.asarray(x, dtype=np.float32)
+        )
         # Scale before windowing (the parquets are unscaled).
         if self._ft is not None:
             arr = self._ft.transform(arr)

@@ -17,7 +17,6 @@ from src.evaluation.ablation import (
     run_condition,
 )
 
-
 # ---------------------------------------------------------------------------
 # Synthetic dataset
 # ---------------------------------------------------------------------------
@@ -124,16 +123,23 @@ def test_run_condition_returns_one_row_per_seed() -> None:
     result = run_condition(
         name="all_features",
         feature_set=list(x_tr.columns),
-        x_train=x_tr, y_train=y_tr,
-        x_val=x_val, y_val=y_val,
-        x_test=x_te, y_test=y_te,
+        x_train=x_tr,
+        y_train=y_tr,
+        x_val=x_val,
+        y_val=y_val,
+        x_test=x_te,
+        y_test=y_te,
         seeds=[42, 43, 44],
         rf_kwargs={"n_estimators": 20, "max_depth": 5, "n_jobs": 1},
     )
     assert isinstance(result, ConditionResult)
     assert len(result.per_seed_metrics) == 3
-    assert {"val_macro_f1", "test_macro_f1", "val_balanced_accuracy",
-            "test_balanced_accuracy"}.issubset(result.per_seed_metrics.columns)
+    assert {
+        "val_macro_f1",
+        "test_macro_f1",
+        "val_balanced_accuracy",
+        "test_balanced_accuracy",
+    }.issubset(result.per_seed_metrics.columns)
 
 
 def test_run_ablation_runs_multiple_conditions() -> None:
@@ -144,7 +150,12 @@ def test_run_ablation_runs_multiple_conditions() -> None:
         "noise_only": ["f1", "f2"],
     }
     result = run_ablation(
-        x_tr, y_tr, x_val, y_val, x_te, y_te,
+        x_tr,
+        y_tr,
+        x_val,
+        y_val,
+        x_te,
+        y_te,
         feature_sets=feature_sets,
         seeds=[42, 43, 44],
         rf_kwargs={"n_estimators": 20, "max_depth": 5, "n_jobs": 1},
@@ -163,7 +174,12 @@ def test_run_ablation_informative_beats_noise() -> None:
         "noise": ["f1", "f2", "f3"],
     }
     result = run_ablation(
-        x_tr, y_tr, x_val, y_val, x_te, y_te,
+        x_tr,
+        y_tr,
+        x_val,
+        y_val,
+        x_te,
+        y_te,
         feature_sets=feature_sets,
         seeds=[42, 43, 44, 45, 46],
         rf_kwargs={"n_estimators": 40, "max_depth": 6, "n_jobs": 1},
@@ -180,13 +196,26 @@ def test_pairwise_comparisons_has_expected_columns() -> None:
         "subset": ["f0", "f1"],
     }
     result = run_ablation(
-        x_tr, y_tr, x_val, y_val, x_te, y_te,
+        x_tr,
+        y_tr,
+        x_val,
+        y_val,
+        x_te,
+        y_te,
         feature_sets=feature_sets,
         seeds=[42, 43, 44],
         rf_kwargs={"n_estimators": 20, "max_depth": 5, "n_jobs": 1},
     )
     cmp_df = result.pairwise_comparisons
-    expected = {"cond_a", "cond_b", "mean_a", "mean_b",
-                "delta_a_minus_b", "p_wilcoxon", "p_holm", "claim"}
+    expected = {
+        "cond_a",
+        "cond_b",
+        "mean_a",
+        "mean_b",
+        "delta_a_minus_b",
+        "p_wilcoxon",
+        "p_holm",
+        "claim",
+    }
     assert expected.issubset(cmp_df.columns)
     assert len(cmp_df) == 1  # 2 conditions -> 1 pair

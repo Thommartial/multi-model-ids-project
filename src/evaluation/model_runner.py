@@ -133,8 +133,12 @@ def _save_seed_artefacts(
     with open(seed_dir / "metrics.json", "w") as fh:
         json.dump({k: float(v) for k, v in metrics_row.items() if k != "seed"}, fh, indent=2)
 
-    pd.DataFrame(cm_val, index=classes, columns=classes).to_csv(seed_dir / "confusion_matrix_val.csv")
-    pd.DataFrame(cm_test, index=classes, columns=classes).to_csv(seed_dir / "confusion_matrix_test.csv")
+    pd.DataFrame(cm_val, index=classes, columns=classes).to_csv(
+        seed_dir / "confusion_matrix_val.csv"
+    )
+    pd.DataFrame(cm_test, index=classes, columns=classes).to_csv(
+        seed_dir / "confusion_matrix_test.csv"
+    )
 
     with open(seed_dir / "metadata.json", "w") as fh:
         json.dump(

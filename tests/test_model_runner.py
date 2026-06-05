@@ -41,9 +41,12 @@ def test_run_model_seeds_returns_one_row_per_seed() -> None:
     result = run_model_seeds(
         name="rule_based",
         model_factory=lambda s: make_rule_based(seed=s, max_depth=3),
-        x_train=x_tr, y_train=y_tr,
-        x_val=x_val, y_val=y_val,
-        x_test=x_te, y_test=y_te,
+        x_train=x_tr,
+        y_train=y_tr,
+        x_val=x_val,
+        y_val=y_val,
+        x_test=x_te,
+        y_test=y_te,
         seeds=[42, 43, 44],
     )
     assert isinstance(result, ModelRunResult)
@@ -56,9 +59,12 @@ def test_run_model_seeds_writes_artefacts(tmp_path: Path) -> None:
     run_model_seeds(
         name="rule_based",
         model_factory=lambda s: make_rule_based(seed=s, max_depth=3),
-        x_train=x_tr, y_train=y_tr,
-        x_val=x_val, y_val=y_val,
-        x_test=x_te, y_test=y_te,
+        x_train=x_tr,
+        y_train=y_tr,
+        x_val=x_val,
+        y_val=y_val,
+        x_test=x_te,
+        y_test=y_te,
         seeds=[42, 43],
         save_dir=tmp_path,
     )
@@ -89,9 +95,12 @@ def test_summary_returns_mean_std_and_ci() -> None:
     result = run_model_seeds(
         name="rule_based",
         model_factory=lambda s: make_rule_based(seed=s, max_depth=3),
-        x_train=x_tr, y_train=y_tr,
-        x_val=x_val, y_val=y_val,
-        x_test=x_te, y_test=y_te,
+        x_train=x_tr,
+        y_train=y_tr,
+        x_val=x_val,
+        y_val=y_val,
+        x_test=x_te,
+        y_test=y_te,
         seeds=[42, 43, 44, 45, 46],
     )
     s = result.summary("test_macro_f1")
@@ -105,9 +114,12 @@ def test_feature_set_subsets_columns() -> None:
     result = run_model_seeds(
         name="rule_based",
         model_factory=lambda s: make_rule_based(seed=s, max_depth=3),
-        x_train=x_tr, y_train=y_tr,
-        x_val=x_val, y_val=y_val,
-        x_test=x_te, y_test=y_te,
+        x_train=x_tr,
+        y_train=y_tr,
+        x_val=x_val,
+        y_val=y_val,
+        x_test=x_te,
+        y_test=y_te,
         seeds=[42],
         feature_set=["f_info"],
     )

@@ -41,6 +41,8 @@ import glob
 import sys
 from pathlib import Path
 
+import matplotlib  # noqa: E402
+
 # Load the native numerical / IO stack (numpy, pyarrow) BEFORE matplotlib.
 # matplotlib pulls in PIL and kiwisolver native extensions whose bundled
 # libstdc++ clashes with pyarrow's in some conda envs, segfaulting on the
@@ -50,8 +52,6 @@ import numpy as np
 import pandas as pd
 import pyarrow  # noqa: F401  (force-load before matplotlib)
 import yaml
-
-import matplotlib  # noqa: E402
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
@@ -66,8 +66,16 @@ TABLES = Path("reports/tables")
 FIGURES = Path("reports/figures")
 GROUPS_YAML = Path("configs/feature_groups.yaml")
 CLASSES = [
-    "Normal", "Generic", "Exploits", "Fuzzers", "Reconnaissance",
-    "DoS", "Analysis", "Backdoor", "Shellcode", "Worms",
+    "Normal",
+    "Generic",
+    "Exploits",
+    "Fuzzers",
+    "Reconnaissance",
+    "DoS",
+    "Analysis",
+    "Backdoor",
+    "Shellcode",
+    "Worms",
 ]
 
 
@@ -109,12 +117,19 @@ def plot_strategy(task: str) -> None:
     ax.set_yticks(y)
     ax.set_yticklabels(labels)
     for i, (_, r) in enumerate(df.iterrows()):
-        ax.annotate(f"{r['test_macro_f1_mean']:.3f}  ({int(r['n_features'])} feat)",
-                    (r["test_macro_f1_mean"] + 0.005, i), va="center", fontsize=9)
+        ax.annotate(
+            f"{r['test_macro_f1_mean']:.3f}  ({int(r['n_features'])} feat)",
+            (r["test_macro_f1_mean"] + 0.005, i),
+            va="center",
+            fontsize=9,
+        )
     ax.set_xlabel("Test macro-F1 (mean ± std over seeds)")
     ax.set_xlim(0, max(df["test_macro_f1_mean"]) + 0.12)
-    ax.set_title(f"RQ1: feature-engineering strategy comparison ({task}, fixed Random Forest)",
-                 fontsize=12, fontweight="bold")
+    ax.set_title(
+        f"RQ1: feature-engineering strategy comparison ({task}, fixed Random Forest)",
+        fontsize=12,
+        fontweight="bold",
+    )
     fig.tight_layout()
     FIGURES.mkdir(parents=True, exist_ok=True)
     fig.savefig(FIGURES / "rq1_ablation_strategy.png", dpi=300, bbox_inches="tight")
@@ -133,13 +148,17 @@ def plot_rfa_composition(group_map: dict[str, str]) -> None:
     for i, v in enumerate(comp.sort_values().values):
         ax.annotate(str(int(v)), (v + 0.05, i), va="center", fontsize=10)
     ax.set_xlabel("Number of RFA-selected features")
-    ax.set_title(f"RQ1: semantic groups in the winning RFA selection ({len(selected)} features)",
-                 fontsize=12, fontweight="bold")
+    ax.set_title(
+        f"RQ1: semantic groups in the winning RFA selection ({len(selected)} features)",
+        fontsize=12,
+        fontweight="bold",
+    )
     fig.tight_layout()
     fig.savefig(FIGURES / "rq1_rfa_group_composition.png", dpi=300, bbox_inches="tight")
     TABLES.mkdir(parents=True, exist_ok=True)
-    pd.DataFrame({"feature": selected, "group": [group_map.get(f, "other") for f in selected]}).to_csv(
-        TABLES / "rq1_rfa_selection_groups.csv", index=False)
+    pd.DataFrame(
+        {"feature": selected, "group": [group_map.get(f, "other") for f in selected]}
+    ).to_csv(TABLES / "rq1_rfa_selection_groups.csv", index=False)
     print(f"saved {FIGURES / 'rq1_rfa_group_composition.png'}")
 
 
@@ -149,8 +168,11 @@ def plot_rfa_composition(group_map: dict[str, str]) -> None:
 def group_permutation_importance(model_name: str, task: str, n_repeats: int, seed: int) -> None:
     import joblib
 
-    train_cols = [c for c in pd.read_parquet(PROCESSED / "train.parquet").columns
-                  if c not in ("label", "attack_cat")]
+    train_cols = [
+        c
+        for c in pd.read_parquet(PROCESSED / "train.parquet").columns
+        if c not in ("label", "attack_cat")
+    ]
     group_map = build_group_map(train_cols, GROUPS_YAML)
     groups = sorted(set(group_map.values()))
 
@@ -198,10 +220,21 @@ def group_permutation_importance(model_name: str, task: str, n_repeats: int, see
     ax.set_yticklabels(CLASSES)
     for i in range(imp.shape[0]):
         for j in range(imp.shape[1]):
-            ax.text(j, i, f"{imp.values[i, j]:.2f}", ha="center", va="center", fontsize=9,
-                    fontweight="bold", color="#222" if imp.values[i, j] < imp.values.max() * 0.5 else "white")
-    ax.set_title(f"RQ1: per-class feature-group importance ({model_name}, {task})\n(F1 drop when group is permuted)",
-                 fontsize=12, fontweight="bold")
+            ax.text(
+                j,
+                i,
+                f"{imp.values[i, j]:.2f}",
+                ha="center",
+                va="center",
+                fontsize=9,
+                fontweight="bold",
+                color="#222" if imp.values[i, j] < imp.values.max() * 0.5 else "white",
+            )
+    ax.set_title(
+        f"RQ1: per-class feature-group importance ({model_name}, {task})\n(F1 drop when group is permuted)",
+        fontsize=12,
+        fontweight="bold",
+    )
     cb = fig.colorbar(im, ax=ax, fraction=0.03, pad=0.01)
     cb.set_label("F1 drop")
     fig.tight_layout()
@@ -215,12 +248,18 @@ def main() -> None:
     ap.add_argument("--model", default="xgboost", help="model family for permutation importance")
     ap.add_argument("--n-repeats", type=int, default=3)
     ap.add_argument("--seed", type=int, default=42)
-    ap.add_argument("--skip-permutation", action="store_true",
-                    help="only the model-free strategy + RFA-composition figures")
+    ap.add_argument(
+        "--skip-permutation",
+        action="store_true",
+        help="only the model-free strategy + RFA-composition figures",
+    )
     args = ap.parse_args()
 
-    train_cols = [c for c in pd.read_parquet(PROCESSED / "train.parquet").columns
-                  if c not in ("label", "attack_cat")]
+    train_cols = [
+        c
+        for c in pd.read_parquet(PROCESSED / "train.parquet").columns
+        if c not in ("label", "attack_cat")
+    ]
     group_map = build_group_map(train_cols, GROUPS_YAML)
 
     plot_strategy(args.task)

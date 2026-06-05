@@ -107,31 +107,41 @@ def main() -> None:
     )
     parser.add_argument("--task", choices=["multiclass", "binary"], default="multiclass")
     parser.add_argument(
-        "--seeds", type=int, nargs="+", default=DEFAULT_SEEDS,
+        "--seeds",
+        type=int,
+        nargs="+",
+        default=DEFAULT_SEEDS,
         help="Override the protocol's default seed list.",
     )
     parser.add_argument(
-        "--save-dir", default=str(RUNS_DIR),
+        "--save-dir",
+        default=str(RUNS_DIR),
         help="Root directory for per-seed artefacts.",
     )
     parser.add_argument(
-        "--no-class-weights", action="store_true",
+        "--no-class-weights",
+        action="store_true",
         help="Train without inverse-frequency class weights.",
     )
     parser.add_argument(
-        "--gpu", action="store_true",
+        "--gpu",
+        action="store_true",
         help="Configure the GPU (memory growth) before training the DL models.",
     )
     parser.add_argument(
-        "--tag", default=None,
+        "--tag",
+        default=None,
         help="Optional subfolder under <save_dir>/<model>/<task>/ so a tuned "
-             "variant does not overwrite the headline run. Free-form string.",
+        "variant does not overwrite the headline run. Free-form string.",
     )
     parser.add_argument(
-        "--hparam", action="append", default=[], metavar="KEY=VAL",
+        "--hparam",
+        action="append",
+        default=[],
+        metavar="KEY=VAL",
         help="Override a model hyperparameter (repeatable). Examples: "
-             "--hparam learning_rate=5e-4 --hparam max_epochs=150. "
-             "Values are parsed by yaml.safe_load for natural typing.",
+        "--hparam learning_rate=5e-4 --hparam max_epochs=150. "
+        "Values are parsed by yaml.safe_load for natural typing.",
     )
     parser.add_argument("--quiet", action="store_true")
     args = parser.parse_args()
@@ -164,9 +174,12 @@ def main() -> None:
     result = run_model_seeds(
         name=args.model,
         model_factory=factory,
-        x_train=x_train, y_train=y_train,
-        x_val=x_val, y_val=y_val,
-        x_test=x_test, y_test=y_test,
+        x_train=x_train,
+        y_train=y_train,
+        x_val=x_val,
+        y_val=y_val,
+        x_test=x_test,
+        y_test=y_test,
         seeds=args.seeds,
         task=args.task,
         save_dir=args.save_dir,
@@ -177,12 +190,16 @@ def main() -> None:
 
     summary = result.summary("test_macro_f1")
     print()
-    print(f"[run_model] {args.model} / test macro-F1: "
-          f"{summary['mean']:.4f} ± {summary['std']:.4f}  "
-          f"(95% CI [{summary['ci95_lo']:.4f}, {summary['ci95_hi']:.4f}])")
+    print(
+        f"[run_model] {args.model} / test macro-F1: "
+        f"{summary['mean']:.4f} ± {summary['std']:.4f}  "
+        f"(95% CI [{summary['ci95_lo']:.4f}, {summary['ci95_hi']:.4f}])"
+    )
     tag_segment = f"/{args.tag}" if args.tag else ""
-    print(f"[run_model] per-seed artefacts saved under "
-          f"{args.save_dir}/{args.model}/{args.task}{tag_segment}/")
+    print(
+        f"[run_model] per-seed artefacts saved under "
+        f"{args.save_dir}/{args.model}/{args.task}{tag_segment}/"
+    )
 
 
 if __name__ == "__main__":

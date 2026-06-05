@@ -49,8 +49,7 @@ def main(
     x = df.drop(columns=list(LABEL_COLS))
     y = df[target].to_numpy()
     print(
-        f"[filter] X shape: {x.shape}  |  target: {target} "
-        f"({pd.Series(y).nunique()} classes)"
+        f"[filter] X shape: {x.shape}  |  target: {target} " f"({pd.Series(y).nunique()} classes)"
     )
 
     print(
@@ -90,18 +89,14 @@ def main(
     print(f"[filter] saved selected -> {json_path}")
     print()
     print(f"Top 20 features by consensus rank ({mode}, target={target}):")
-    top20 = result.ranking.head(20)[
-        ["feature", "et_rank", "mi_rank", "consensus_rank"]
-    ]
+    top20 = result.ranking.head(20)[["feature", "et_rank", "mi_rank", "consensus_rank"]]
     print(top20.to_string(index=False))
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--top-k", type=int, default=30)
-    parser.add_argument(
-        "--mode", choices=["rank_mean", "intersection"], default="rank_mean"
-    )
+    parser.add_argument("--mode", choices=["rank_mean", "intersection"], default="rank_mean")
     parser.add_argument(
         "--target",
         default="attack_cat",

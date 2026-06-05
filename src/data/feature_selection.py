@@ -164,9 +164,7 @@ def consensus_selection(
         Optional extra kwargs forwarded to the underlying methods.
     """
     if mode not in {"rank_mean", "intersection"}:
-        raise ValueError(
-            f"unknown mode: {mode!r} (expected 'rank_mean' or 'intersection')"
-        )
+        raise ValueError(f"unknown mode: {mode!r} (expected 'rank_mean' or 'intersection')")
     if mode == "intersection" and k is None:
         raise ValueError("mode='intersection' requires k to be set")
 

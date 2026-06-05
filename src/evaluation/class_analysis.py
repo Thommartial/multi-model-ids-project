@@ -34,7 +34,11 @@ def per_class_metrics(y_true, y_pred, classes: list[str]) -> pd.DataFrame:
         tn = int(((yt != c) & (yp != c)).sum())
         recall = tp / (tp + fn) if (tp + fn) else np.nan
         precision = tp / (tp + fp) if (tp + fp) else np.nan
-        f1 = 2 * precision * recall / (precision + recall) if (precision and recall and precision + recall > 0) else 0.0
+        f1 = (
+            2 * precision * recall / (precision + recall)
+            if (precision and recall and precision + recall > 0)
+            else 0.0
+        )
         fpr = fp / (fp + tn) if (fp + tn) else np.nan
         rows[c] = dict(recall=recall, precision=precision, f1=f1, fpr=fpr, support=tp + fn)
     return pd.DataFrame(rows).T[["recall", "precision", "f1", "fpr", "support"]]
@@ -63,10 +67,7 @@ def most_confused_pairs(y_true, y_pred, classes: list[str], top: int = 12) -> pd
     row_sum = conf.sum(axis=1, keepdims=True)
     norm = np.divide(conf, row_sum, out=np.zeros_like(conf), where=row_sum > 0)
     pairs = [
-        (classes[i], classes[j], float(norm[i, j]))
-        for i in range(n)
-        for j in range(n)
-        if i != j
+        (classes[i], classes[j], float(norm[i, j])) for i in range(n) for j in range(n) if i != j
     ]
     pairs.sort(key=lambda x: -x[2])
     return pd.DataFrame(pairs[:top], columns=["true", "predicted_as", "frac_of_true_class"])

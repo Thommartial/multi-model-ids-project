@@ -9,6 +9,7 @@ import pandas as pd
 import pytest
 
 from src.models.classical_ml import (
+    _XGBOOST_AVAILABLE,
     RandomForestModel,
     SVMModel,
     XGBoostModel,
@@ -18,7 +19,6 @@ from src.models.classical_ml import (
     load_hparam_space,
     load_model,
     save_model,
-    _XGBOOST_AVAILABLE,
 )
 
 

@@ -53,8 +53,7 @@ def _load_fold(name: str) -> pd.DataFrame:
 def _df_to_markdown(df: pd.DataFrame, float_fmt: str = "{:.4f}") -> str:
     """Plain-markdown table renderer that does not depend on tabulate."""
     cols = [str(c) for c in df.columns]
-    lines = ["| " + " | ".join(cols) + " |",
-             "|" + "|".join(["---"] * len(cols)) + "|"]
+    lines = ["| " + " | ".join(cols) + " |", "|" + "|".join(["---"] * len(cols)) + "|"]
     for _, row in df.iterrows():
         cells = []
         for c in df.columns:
@@ -101,7 +100,9 @@ def _add_flow_pair_features(
     new_cols: list[str] = []
     out = []
     for frame in (train, val, test):
-        numeric = frame.drop(columns=list(LABEL_COLS)).select_dtypes(include="number").columns.tolist()
+        numeric = (
+            frame.drop(columns=list(LABEL_COLS)).select_dtypes(include="number").columns.tolist()
+        )
         derived = extract_all_bigram_features(
             frame[numeric],
             lag=1,
@@ -110,7 +111,9 @@ def _add_flow_pair_features(
             fill=0.0,
         )
         derived.index = frame.index
-        augmented = pd.concat([frame.reset_index(drop=True), derived.reset_index(drop=True)], axis=1)
+        augmented = pd.concat(
+            [frame.reset_index(drop=True), derived.reset_index(drop=True)], axis=1
+        )
         out.append(augmented)
         new_cols = list(derived.columns)
     return out[0], out[1], out[2], new_cols
@@ -119,27 +122,39 @@ def _add_flow_pair_features(
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--task", choices=["multiclass", "binary"], default="multiclass",
+        "--task",
+        choices=["multiclass", "binary"],
+        default="multiclass",
         help="Which target to use (attack_cat or label).",
     )
     parser.add_argument(
-        "--filter-top-k", type=int, default=30,
+        "--filter-top-k",
+        type=int,
+        default=30,
         help="Top-k file to use for the filter condition (must already exist).",
     )
     parser.add_argument(
-        "--seeds", nargs="+", type=int, default=DEFAULT_SEEDS,
+        "--seeds",
+        nargs="+",
+        type=int,
+        default=DEFAULT_SEEDS,
         help="Random seeds for the multi-seed runs.",
     )
     parser.add_argument(
-        "--n-estimators", type=int, default=100,
+        "--n-estimators",
+        type=int,
+        default=100,
         help="RF n_estimators (held fixed across conditions).",
     )
     parser.add_argument(
-        "--max-depth", type=int, default=None,
+        "--max-depth",
+        type=int,
+        default=None,
         help="RF max_depth (held fixed across conditions). Default: None (no cap).",
     )
     parser.add_argument(
-        "--quiet", action="store_true",
+        "--quiet",
+        action="store_true",
         help="Suppress per-seed progress lines.",
     )
     args = parser.parse_args()
@@ -217,7 +232,12 @@ def main() -> None:
         "n_jobs": -1,
     }
     result = run_ablation(
-        x_train, y_train, x_val, y_val, x_test, y_test,
+        x_train,
+        y_train,
+        x_val,
+        y_val,
+        x_test,
+        y_test,
         feature_sets=feature_sets,
         seeds=args.seeds,
         task=args.task,
@@ -244,8 +264,7 @@ def main() -> None:
     md_lines = [
         f"# Ablation results -- {args.task} task",
         "",
-        f"Primary metric: **{result.primary_metric}**  |  "
-        f"seeds: {result.seeds}",
+        f"Primary metric: **{result.primary_metric}**  |  " f"seeds: {result.seeds}",
         "",
         "## Per-condition summary",
         "",

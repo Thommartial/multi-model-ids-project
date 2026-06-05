@@ -28,14 +28,14 @@ import glob
 import sys
 from pathlib import Path
 
+import matplotlib  # noqa: E402
+
 # Load numpy/pyarrow before matplotlib: matplotlib's PIL/kiwisolver native
 # extensions can clash with pyarrow's bundled libstdc++ in some conda envs and
 # segfault on the first parquet read. Importing pyarrow first avoids the crash.
 import numpy as np
 import pandas as pd
 import pyarrow  # noqa: F401  (force-load before matplotlib)
-
-import matplotlib  # noqa: E402
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
@@ -62,14 +62,24 @@ MODELS = [
     ("LSTM", "lstm", True),
 ]
 CLASSES = [
-    "Normal", "Generic", "Exploits", "Fuzzers", "Reconnaissance",
-    "DoS", "Analysis", "Backdoor", "Shellcode", "Worms",
+    "Normal",
+    "Generic",
+    "Exploits",
+    "Fuzzers",
+    "Reconnaissance",
+    "DoS",
+    "Analysis",
+    "Backdoor",
+    "Shellcode",
+    "Worms",
 ]
 
 
 def _seed_files(runs: Path, folder: str, task: str, tag: str | None) -> list[str]:
     tagseg = f"{tag}/" if tag else ""
-    return sorted(glob.glob(str(runs / folder / task / f"{tagseg}seed_*" / "predictions_test.parquet")))
+    return sorted(
+        glob.glob(str(runs / folder / task / f"{tagseg}seed_*" / "predictions_test.parquet"))
+    )
 
 
 def main() -> None:
@@ -127,8 +137,21 @@ def main() -> None:
     ax.set_yticklabels(mat.index)
     for i in range(mat.shape[0]):
         for j in range(mat.shape[1]):
-            ax.text(j, i, f"{mat.values[i, j]:.2f}", ha="center", va="center", fontsize=12, fontweight="bold", color="black")
-    ax.set_title("Per-class F1 by model — test (classes ordered hardest → easiest)", fontsize=12, fontweight="bold")
+            ax.text(
+                j,
+                i,
+                f"{mat.values[i, j]:.2f}",
+                ha="center",
+                va="center",
+                fontsize=12,
+                fontweight="bold",
+                color="black",
+            )
+    ax.set_title(
+        "Per-class F1 by model — test (classes ordered hardest → easiest)",
+        fontsize=12,
+        fontweight="bold",
+    )
     cb = fig.colorbar(im, ax=ax, fraction=0.022, pad=0.01)
     cb.set_label("F1")
     fig.tight_layout()
@@ -138,18 +161,27 @@ def main() -> None:
     means = rank["mean_f1"].to_numpy()
     stds = rank["std_f1"].to_numpy()
     sup = rank["test_support"].to_numpy()
-    colors = ["#d73027" if m < 0.2 else "#fc8d59" if m < 0.5 else "#fee08b" if m < 0.75 else "#1a9850" for m in means]
+    colors = [
+        "#d73027" if m < 0.2 else "#fc8d59" if m < 0.5 else "#fee08b" if m < 0.75 else "#1a9850"
+        for m in means
+    ]
     x = np.arange(len(order))
     fig, ax = plt.subplots(figsize=(11, 5.5))
     ax.bar(x, means, yerr=stds, capsize=3, color=colors, edgecolor="#555", linewidth=0.4)
     for i in range(len(order)):
-        ax.annotate(f"n={sup[i]}", (i, means[i] + stds[i] + 0.025), ha="center", fontsize=8, color="#333")
+        ax.annotate(
+            f"n={sup[i]}", (i, means[i] + stds[i] + 0.025), ha="center", fontsize=8, color="#333"
+        )
     ax.set_xticks(x)
     ax.set_xticklabels(order, rotation=30, ha="right")
     ax.set_ylabel("Mean F1 across models")
     ax.set_ylim(0, 1.05)
     ax.grid(axis="y", alpha=0.3)
-    ax.set_title("Class difficulty ranking (mean ± std across models; n = test support)", fontsize=12, fontweight="bold")
+    ax.set_title(
+        "Class difficulty ranking (mean ± std across models; n = test support)",
+        fontsize=12,
+        fontweight="bold",
+    )
     legend = [
         Patch(color="#d73027", label="Very hard (<0.2)"),
         Patch(color="#fc8d59", label="Hard (0.2–0.5)"),

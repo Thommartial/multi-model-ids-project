@@ -86,16 +86,23 @@ def _run_rf(max_features: int | None, seed: int, verbose: bool) -> None:
     x_val = val.drop(columns=list(LABEL_COLS))
     y_tr = train["attack_cat"].to_numpy()
     y_val = val["attack_cat"].to_numpy()
-    print(f"[rfa-rf] X_train={x_tr.shape}, X_val={x_val.shape}, "
-          f"target=attack_cat ({pd.Series(y_tr).nunique()} classes)")
+    print(
+        f"[rfa-rf] X_train={x_tr.shape}, X_val={x_val.shape}, "
+        f"target=attack_cat ({pd.Series(y_tr).nunique()} classes)"
+    )
     result = rfa_random_forest(
-        x_tr, y_tr, x_val, y_val,
+        x_tr,
+        y_tr,
+        x_val,
+        y_val,
         max_features=max_features,
         seed=seed,
         verbose=verbose,
     )
     print()
-    print(f"[rfa-rf] done in {result.runtime_seconds:.1f}s; selected {len(result.selected)} features")
+    print(
+        f"[rfa-rf] done in {result.runtime_seconds:.1f}s; selected {len(result.selected)} features"
+    )
     print(f"[rfa-rf] top 20: {result.selected[:20]}")
     _save_result(result, "rf_macro_f1_attack_cat")
 
@@ -107,18 +114,20 @@ def _run_svm(max_features: int | None, subsample: int, seed: int, verbose: bool)
     train = _load_fold("train")
     x_tr = train.drop(columns=list(LABEL_COLS))
     y_tr = train["label"].to_numpy()
-    print(f"[rfa-svm] X_train={x_tr.shape}, target=label (binary), "
-          f"subsample={subsample}")
+    print(f"[rfa-svm] X_train={x_tr.shape}, target=label (binary), " f"subsample={subsample}")
     result = rfa_svm_cost_function(
-        x_tr, y_tr,
+        x_tr,
+        y_tr,
         max_features=max_features,
         subsample=subsample,
         seed=seed,
         verbose=verbose,
     )
     print()
-    print(f"[rfa-svm] done in {result.runtime_seconds:.1f}s; "
-          f"ranked {len(result.selected)} features")
+    print(
+        f"[rfa-svm] done in {result.runtime_seconds:.1f}s; "
+        f"ranked {len(result.selected)} features"
+    )
     print(f"[rfa-svm] top 20: {result.selected[:20]}")
     _save_result(result, "svm_cost_function_label")
 
@@ -136,7 +145,7 @@ def main() -> None:
         type=int,
         default=None,
         help="Hard cap on features added. Default: no cap (rank everything for SVM; "
-             "use patience for RF).",
+        "use patience for RF).",
     )
     parser.add_argument(
         "--subsample",

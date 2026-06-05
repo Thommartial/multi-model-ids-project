@@ -97,7 +97,15 @@ def main() -> None:
         ax.grid(axis="y", alpha=0.3)
         ax.set_title(f"{task.capitalize()} task", fontsize=12, fontweight="bold")
 
-    fig.legend(handles, ["Train", "Test"], loc="upper center", bbox_to_anchor=(0.5, 0.935), ncol=2, frameon=False, fontsize=11)
+    fig.legend(
+        handles,
+        ["Train", "Test"],
+        loc="upper center",
+        bbox_to_anchor=(0.5, 0.935),
+        ncol=2,
+        frameon=False,
+        fontsize=11,
+    )
     fig.suptitle(
         "Train vs. test macro-F1 — generalisation gap by model (mean ± std over seeds)",
         fontsize=13,

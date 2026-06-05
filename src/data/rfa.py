@@ -221,9 +221,8 @@ def rfa_random_forest(
             )
 
         # Patience-based early stopping (only fires once the deque is full)
-        if (
-            len(recent_improvements) == patience
-            and all(d < improvement_threshold for d in recent_improvements)
+        if len(recent_improvements) == patience and all(
+            d < improvement_threshold for d in recent_improvements
         ):
             if verbose:
                 print(
@@ -313,7 +312,8 @@ def rfa_svm_cost_function(
     t0 = time.time()
     all_features = list(x_train.columns)
     candidates = (
-        list(all_features) if candidate_pool is None
+        list(all_features)
+        if candidate_pool is None
         else [f for f in candidate_pool if f in all_features]
     )
 

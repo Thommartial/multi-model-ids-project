@@ -70,9 +70,13 @@ def _load_model(model_name: str, seed_dir: Path):
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--runs-dir", default="reports/runs")
-    ap.add_argument("--force", action="store_true", help="recompute even if train_* already present")
     ap.add_argument(
-        "--models", nargs="+", default=None,
+        "--force", action="store_true", help="recompute even if train_* already present"
+    )
+    ap.add_argument(
+        "--models",
+        nargs="+",
+        default=None,
         help="Restrict to these model folders (e.g. --models xgboost). Default: all.",
     )
     args = ap.parse_args()

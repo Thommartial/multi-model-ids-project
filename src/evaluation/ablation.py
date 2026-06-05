@@ -310,10 +310,7 @@ def pairwise_comparisons(
             df.loc[ok, "p_holm"] = holm_bonferroni(df.loc[ok, "p_wilcoxon"].to_numpy())
         else:
             df["p_holm"] = np.nan
-        df["claim"] = (
-            (df["p_holm"] < 0.05)
-            & (df["delta_a_minus_b"].abs() >= effect_size_floor)
-        )
+        df["claim"] = (df["p_holm"] < 0.05) & (df["delta_a_minus_b"].abs() >= effect_size_floor)
     return df
 
 
